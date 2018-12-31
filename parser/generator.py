@@ -19,6 +19,7 @@ class GeneratorVisitor(SmallCVisitor):
         super(SmallCVisitor, self).__init__()
         self.Module = Module(name=__file__)
         self.Builder = None
+        self.function = None
         self.NamedValues = dict()
         self.counter = 0
         self.block_stack = []
@@ -81,16 +82,23 @@ class GeneratorVisitor(SmallCVisitor):
             self.function_dict[ctx.identifier().getText()] = func
         # blocks or ;
         if ctx.compound_stmt():
-            block = func.append_basic_block(name="label_" + str(self.counter))
+            self.function = ctx.identifier().getText()
+            block = func.append_basic_block(ctx.identifier().getText())
             varDict = dict()
-            self.builder = IRBuilder(block)
-            for arg in func.args:
-                alloca = self.builder.alloca(arg.type, name=arg.name)
-                self.builder.store(arg, alloca)
+            self.Builder = IRBuilder(block)
+            for i, arg in enumerate(func.args):
+                arg.name = argsName[i]
+                alloca = self.Builder.alloca(arg.type,name=arg.name)
+                self.Builder.store(arg,alloca)
                 varDict[arg.name] = alloca
             self.block_stack.append(block)
             self.var_stack.append(varDict)
             self.visit(ctx.compound_stmt())
+            self.block_stack.pop()
+            self.var_stack.pop()
+            self.function = None
+            self.Builder = None
+
 
     # def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
     #     type = self.getType(ctx.type_specifier())
