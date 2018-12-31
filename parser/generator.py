@@ -24,6 +24,7 @@ class GeneratorVisitor(SmallCVisitor):
         self.counter = 0
         self.block_stack = []
         self.var_stack = []
+        self.cur_decl_type = None
 
         self.indentation = 0
         self.function_dict = dict()
@@ -105,8 +106,8 @@ class GeneratorVisitor(SmallCVisitor):
                     self.Builder.store(Constant(type,None),alloca)
                     self.var_stack[-1][var.identifier().getText()] = alloca
                 else:
-                    g_var = GlobalVariable(self.Module,type,var.identifier().getText())
-                    g_var.initializer = Constant(type,None)
+                    g_var = GlobalVariable(self.Module, type, var.identifier().getText())
+                    g_var.initializer = Constant(type, None)
         return
 
     def visitStmt(self, ctx:SmallCParser.StmtContext):
@@ -125,8 +126,33 @@ class GeneratorVisitor(SmallCVisitor):
     def visitExpr(self, ctx: SmallCParser.ExprContext):
         return self.visitChildren(ctx)
 
-    def getPtr(self, identifier):
-        return Constant(PointerType, identifier.getText())
+    def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
+        self.cur_decl_type = self.getType(ctx.type_specifier().getText())
+        return self.visitChildren(ctx)
+
+    def visitVar_decl_list(self, ctx: SmallCParser.Var_decl_listContext):
+        ans = []
+        decls = ctx.variable_id()
+        for decl in decls:
+            ans.append(self.visit(decl))
+        return ans
+
+    def visitVariable_id(self, ctx: SmallCParser.Variable_idContext):
+        identifier = ctx.identifier()
+        builder = IRBuilder(self.block_stack[-1])
+        ptr = builder.alloca(typ=self.cur_decl_type, name=identifier.getText())
+
+        expr = ctx.expr()
+        if expr:
+            value = self.visit(expr)
+        else:
+            value = Constant(self.cur_decl_type, None)
+
+        builder.store(value, ptr)
+
+        var_map = self.var_stack[-1]
+        var_map[identifier.getText()] = {"value": value, "ptr": ptr}
+        return ptr
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
         if ctx.BOOLEAN():
