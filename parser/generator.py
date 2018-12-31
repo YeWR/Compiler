@@ -40,6 +40,10 @@ class GeneratorVisitor(SmallCVisitor):
         print("Error: ", info)
         return 0
 
+    def toBool(self, builder, value):
+        zero = Constant(self.getType('bool'), 0)
+        return builder.icmp_signed('!=', value, zero)
+
     def getType(self, type):
         if type == 'int':
             return IntType(32)
@@ -88,29 +92,28 @@ class GeneratorVisitor(SmallCVisitor):
             self.var_stack.append(varDict)
             self.visit(ctx.compound_stmt())
 
-    def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
-        type = self.getType(ctx.type_specifier())
-        list = ctx.var_decl_list()
-        for var in list.getChildren():
-            if var.getText() != ',':
-                if self.builder:
-                    alloca = self.builder.alloca(type, name=var.identifier().getText())
-                    self.builder.store(Constant(type, None), alloca)
-                    self.var_stack[-1][var.identifier().getText()] = alloca
-                else:
-                    g_var = GlobalVariable(self.Module, type, var.identifier().getText())
-                    g_var.initializer = Constant(type, None)
-        return
+    # def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
+    #     type = self.getType(ctx.type_specifier())
+    #     list = ctx.var_decl_list()
+    #     for var in list.getChildren():
+    #         if var.getText() != ',':
+    #             if self.builder:
+    #                 alloca = self.builder.alloca(type, name=var.identifier().getText())
+    #                 self.builder.store(Constant(type, None), alloca)
+    #                 self.var_stack[-1][var.identifier().getText()] = alloca
+    #             else:
+    #                 g_var = GlobalVariable(self.Module, type, var.identifier().getText())
+    #                 g_var.initializer = Constant(type, None)
+    #     return
 
     def visitStmt(self, ctx: SmallCParser.StmtContext):
-
-        pass
+        return self.visitChildren(ctx)
 
     def visitCompound_stmt(self, ctx: SmallCParser.Compound_stmtContext):
-        self.visitChildren(ctx)
+        return self.visitChildren(ctx)
 
     def visitAssignment(self, ctx: SmallCParser.AssignmentContext):
-        pass
+        return self.visitChildren(ctx)
         # block = self.Builder.block
         # identifier = ctx.identifier()
         # expr = self.visit(ctx.expr())
@@ -118,6 +121,23 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitExpr(self, ctx: SmallCParser.ExprContext):
         return self.visitChildren(ctx)
+
+    def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
+        builder = IRBuilder(self.block_stack[-1])
+
+        expr = self.visit(ctx.expr())
+
+        cond_expr = self.toBool(builder, expr)
+        else_expr = ctx.ELSE()
+
+        with builder.if_else(cond_expr) as (then, otherwise):
+            with then:
+                true_stmt = ctx.stmt(0)
+                self.visit(true_stmt)
+            with otherwise:
+                if else_expr:
+                    else_stmt = ctx.stmt(1)
+                    self.visit(else_stmt)
 
     def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
         self.cur_decl_type = self.getType(ctx.type_specifier().getText())
@@ -133,18 +153,19 @@ class GeneratorVisitor(SmallCVisitor):
     def visitVariable_id(self, ctx: SmallCParser.Variable_idContext):
         identifier = ctx.identifier()
         builder = IRBuilder(self.block_stack[-1])
-        ptr = builder.alloca(typ=self.cur_decl_type, name=identifier.getText())
+        type = self.cur_decl_type
+        ptr = builder.alloca(typ=type, name=identifier.getText())
 
         expr = ctx.expr()
         if expr:
             value = self.visit(expr)
         else:
-            value = Constant(self.cur_decl_type, None)
+            value = Constant(type, None)
 
         builder.store(value, ptr)
 
         var_map = self.var_stack[-1]
-        var_map[identifier.getText()] = {"value": value, "ptr": ptr}
+        var_map[identifier.getText()] = {"type": type, "value": value, "ptr": ptr}
         return ptr
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
@@ -157,7 +178,9 @@ class GeneratorVisitor(SmallCVisitor):
         elif ctx.CHARCONST():
             return Constant(IntType(8), ctx.getText())
         elif ctx.identifier():
-            return
+            value_table = self.var_stack[-1]
+            identifier = value_table[ctx.identifier().getText()]
+            return Constant(identifier['type'], identifier['value'])
         elif ctx.functioncall():
             return
         elif ctx.expr():
