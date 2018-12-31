@@ -45,6 +45,9 @@ class GeneratorVisitor(SmallCVisitor):
         zero = Constant(self.getType('bool'), 0)
         return builder.icmp_signed('!=', value, zero)
 
+    def tempVal(self, builder, ptr):
+        return builder.load(ptr)
+
     def getType(self, type):
         if type == 'int':
             return IntType(32)
@@ -88,8 +91,8 @@ class GeneratorVisitor(SmallCVisitor):
             self.Builder = IRBuilder(block)
             for i, arg in enumerate(func.args):
                 arg.name = argsName[i]
-                alloca = self.Builder.alloca(arg.type,name=arg.name)
-                self.Builder.store(arg,alloca)
+                alloca = self.Builder.alloca(arg.type, name=arg.name)
+                self.Builder.store(arg, alloca)
                 varDict[arg.name] = alloca
             self.block_stack.append(block)
             self.var_stack.append(varDict)
@@ -98,7 +101,6 @@ class GeneratorVisitor(SmallCVisitor):
             self.var_stack.pop()
             self.function = None
             self.Builder = None
-
 
     # def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
     #     type = self.getType(ctx.type_specifier())
@@ -132,8 +134,14 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
         builder = IRBuilder(self.block_stack[-1])
+        var_map = self.var_stack[-1]
 
-        expr = self.visit(ctx.expr())
+        temp = self.visit(ctx.expr())
+        if not isinstance(temp, Constant):
+            temp_ptr = var_map[temp.getText()]['ptr']
+            expr = self.tempVal(builder, temp_ptr)
+        else:
+            expr = temp
 
         cond_expr = self.toBool(builder, expr)
         else_expr = ctx.ELSE()
@@ -161,20 +169,28 @@ class GeneratorVisitor(SmallCVisitor):
     def visitVariable_id(self, ctx: SmallCParser.Variable_idContext):
         identifier = ctx.identifier()
         builder = IRBuilder(self.block_stack[-1])
+        var_map = self.var_stack[-1]
         type = self.cur_decl_type
         ptr = builder.alloca(typ=type, name=identifier.getText())
 
         expr = ctx.expr()
         if expr:
-            value = self.visit(expr)
+            temp = self.visit(expr)
+            if not isinstance(temp, Constant):
+                temp_ptr = var_map[temp.getText()]['ptr']
+                value = self.tempVal(builder, temp_ptr)
+            else:
+                value = temp
         else:
             value = Constant(type, None)
 
         builder.store(value, ptr)
 
-        var_map = self.var_stack[-1]
-        var_map[identifier.getText()] = {"type": type, "value": value, "ptr": ptr}
+        var_map[identifier.getText()] = {"id": identifier.getText(), "type": type, "value": value, "ptr": ptr}
         return ptr
+
+    def visitExpr(self, ctx: SmallCParser.ExprContext):
+        return self.visitChildren(ctx)
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
         if ctx.BOOLEAN():
@@ -186,9 +202,7 @@ class GeneratorVisitor(SmallCVisitor):
         elif ctx.CHARCONST():
             return Constant(IntType(8), ctx.getText())
         elif ctx.identifier():
-            value_table = self.var_stack[-1]
-            identifier = value_table[ctx.identifier().getText()]
-            return Constant(identifier['type'], identifier['value'])
+            return ctx.identifier()
         elif ctx.functioncall():
             return
         elif ctx.expr():
