@@ -18,10 +18,11 @@ class GeneratorVisitor(SmallCVisitor):
     def __init__(self, output_file=None):
         super(SmallCVisitor, self).__init__()
         self.Module = Module(name=__file__)
-        self.Builder = IRBuilder
+        self.Builder = None
         self.NamedValues = dict()
         self.counter = 0
         self.block_stack = []
+        self.var_stack = []
 
         self.indentation = 0
         self.function_dict = dict()
@@ -52,28 +53,57 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitFunction_definition(self, ctx: SmallCParser.Function_definitionContext):
         retType = self.getType(ctx.type_specifier().getText())
+        argsType = []
+        argsName = []
         # args
         if ctx.param_decl_list():
             args = ctx.param_decl_list()
-            argsType = []
+
             for t in args.getChildren():
                 if t.getText() != ',':
                     argsType.append(self.getType(t.type_specifier().getText()))
+                    argsName.append(t.identifier().getText())
             funcType = FunctionType(retType, tuple(argsType))
         # no args
         else:
             funcType = FunctionType(retType, ())
 
         # function
-        func = Function(self.Module, funcType, name=ctx.identifier().getText())
-        self.function_dict[ctx.identifier().getText()] = func
-
-        block = func.append_basic_block(name="label_" + str(self.counter))
-        self.counter += 1
-
+        if ctx.identifier().getText() in self.function_dict:
+            func = self.function_dict[ctx.identifier().getText()]
+        else:
+            func = Function(self.Module, funcType, name=ctx.identifier().getText())
+            self.function_dict[ctx.identifier().getText()] = func
         # blocks or ;
-        self.visit(ctx.compound_stmt())
+        if ctx.compound_stmt():
+            block = func.append_basic_block(name="label_" + str(self.counter))
+            varDict = dict()
+            self.builder = IRBuilder(block)
+            for arg in func.args:
+                alloca = self.builder.alloca(arg.type,name=arg.name)
+                self.builder.store(arg,alloca)
+                varDict[arg.name] = alloca
+            self.block_stack.append(block)
+            self.var_stack.append(varDict)
+            self.visit(ctx.compound_stmt())
 
+    def visitVar_decl(self, ctx:SmallCParser.Var_declContext):
+        type = self.getType(ctx.type_specifier())
+        list = ctx.var_decl_list()
+        for var in list.getChildren():
+            if var.getText() != ',':
+                if self.builder:
+                    alloca = self.builder.alloca(type, name=var.identifier().getText())
+                    self.builder.store(Constant(type,None),alloca)
+                    self.var_stack[-1][var.identifier().getText()] = alloca
+                else:
+                    g_var = GlobalVariable(self.Module,type,var.identifier().getText())
+                    g_var.initializer = Constant(type,None)
+        return
+
+    def visitStmt(self, ctx:SmallCParser.StmtContext):
+
+        pass
     def visitCompound_stmt(self, ctx: SmallCParser.Compound_stmtContext):
         self.visitChildren(ctx)
 
