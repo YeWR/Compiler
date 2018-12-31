@@ -139,7 +139,7 @@ class GeneratorVisitor(SmallCVisitor):
         if expr:
             value = self.visit(expr)
         else:
-            value = None
+            value = Constant(self.cur_decl_type, None)
 
         builder.store(value, ptr)
 
