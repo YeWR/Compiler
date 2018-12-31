@@ -85,11 +85,11 @@ class GeneratorVisitor(SmallCVisitor):
             self.function = ctx.identifier().getText()
             block = func.append_basic_block(ctx.identifier().getText())
             varDict = dict()
-            self.Builder = IRBuilder(block)
+            builder = IRBuilder(block)
             for i, arg in enumerate(func.args):
                 arg.name = argsName[i]
-                alloca = self.Builder.alloca(arg.type,name=arg.name)
-                self.Builder.store(arg,alloca)
+                alloca = builder.alloca(arg.type,name=arg.name)
+                builder.store(arg,alloca)
                 varDict[arg.name] = alloca
             self.block_stack.append(block)
             self.var_stack.append(varDict)
@@ -97,7 +97,16 @@ class GeneratorVisitor(SmallCVisitor):
             self.block_stack.pop()
             self.var_stack.pop()
             self.function = None
-            self.Builder = None
+        return
+
+    def visitFunctioncall(self, ctx:SmallCParser.FunctioncallContext):
+        args = []
+        builder = IRBuilder(self.block_stack[-1])
+        if ctx.param_list():
+            for param in ctx.param_list().getChildren():
+                temp = self.visit(param)
+                args.append(temp)
+        return builder.call(self.function_dict[ctx.identifier().getText()],args)
 
 
     # def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
@@ -118,6 +127,7 @@ class GeneratorVisitor(SmallCVisitor):
         return self.visitChildren(ctx)
 
     def visitCompound_stmt(self, ctx: SmallCParser.Compound_stmtContext):
+
         return self.visitChildren(ctx)
 
     def visitAssignment(self, ctx: SmallCParser.AssignmentContext):
@@ -128,7 +138,46 @@ class GeneratorVisitor(SmallCVisitor):
         # result = self.Builder().store(value=expr, ptr=, align=4)
 
     def visitExpr(self, ctx: SmallCParser.ExprContext):
-        return self.visitChildren(ctx)
+        if ctx.condition():
+            return self.visit(ctx.condition())
+        elif ctx.assignment():
+            return self.visit(ctx.assignment())
+        elif ctx.functioncall():
+            return self.visit(ctx.functioncall())
+
+    def visitCondition(self, ctx:SmallCParser.ConditionContext):
+        if ctx.expr():
+            disjunction = self.visit(ctx.disjunction())
+            expr = self.visit(ctx.expr())
+            condition = self.visit(ctx.condition())
+        else:
+            return self.visit(ctx.disjunction())
+
+    def visitDisjunction(self, ctx:SmallCParser.DisjunctionContext):
+        if ctx.disjunction():
+            disjunction = self.visit(ctx.disjunction())
+            conjunction = self.visit(ctx.conjunction())
+        else:
+            return self.visit(ctx.conjunction())
+
+    def visitConjunction(self, ctx:SmallCParser.ConjunctionContext):
+        if ctx.conjunction():
+            conjunction = self.visit(ctx.conjunction())
+            comparison = self.visit(ctx.comparison())
+        else:
+            return self.visit(ctx.comparison())
+
+    def visitComparison(self, ctx:SmallCParser.ComparisonContext):
+        if ctx.EQUALITY():
+            relation1 = self.visit(ctx.relation(0))
+            relation2 = self.visit(ctx.relation(1))
+        elif ctx.NEQUALITY():
+            relation1 = self.visit(ctx.relation(0))
+            relation2 = self.visit(ctx.relation(1))
+        else:
+            return self.visit(ctx.relation())
+
+    def visitRelation(self, ctx:SmallCParser.RelationContext):
 
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
         builder = IRBuilder(self.block_stack[-1])
@@ -190,7 +239,7 @@ class GeneratorVisitor(SmallCVisitor):
             identifier = value_table[ctx.identifier().getText()]
             return Constant(identifier['type'], identifier['value'])
         elif ctx.functioncall():
-            return
+            return self.visitChildren(ctx)
         elif ctx.expr():
             return
         else:
