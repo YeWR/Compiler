@@ -21,6 +21,7 @@ class GeneratorVisitor(SmallCVisitor):
         self.Builder = IRBuilder
         self.NamedValues = dict()
         self.counter = 0
+        self.block_stack = []
 
         self.indentation = 0
         self.function_dict = dict()
@@ -71,10 +72,23 @@ class GeneratorVisitor(SmallCVisitor):
         self.counter += 1
 
         # blocks or ;
-        self.visitChildren(ctx)
+        self.visit(ctx.compound_stmt())
 
     def visitCompound_stmt(self, ctx: SmallCParser.Compound_stmtContext):
         self.visitChildren(ctx)
+
+    def visitAssignment(self, ctx: SmallCParser.AssignmentContext):
+        pass
+        # block = self.Builder.block
+        # identifier = ctx.identifier()
+        # expr = self.visit(ctx.expr())
+        # result = self.Builder().store(value=expr, ptr=, align=4)
+
+    def visitExpr(self, ctx: SmallCParser.ExprContext):
+        return self.visitChildren(ctx)
+
+    def getPtr(self, identifier):
+        return Constant(PointerType, identifier.getText())
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
         if ctx.BOOLEAN():
