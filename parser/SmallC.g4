@@ -1,44 +1,5 @@
 grammar SmallC;
 
-/*
- * We will need these tokens to determine type of AST nodes
- */
- 
-tokens {
-    ASSIGNMENT,
-    BREAKSTATEMENT,
-    COMPARISON,
-    COMPOUNDSTATEMENT,
-    CONDITION,
-    CONJUNCTION,
-    CONTINUESTATEMENT,
-    DISJUNCTION,
-    EQUATION,
-    EXPRESSION,
-    FACTOR,
-    FORSTATEMENT,
-    FUNCTION,
-    FUNCTIONCALL,
-    ID,
-    IFELSESTATEMENT,
-    IFSTATEMENT,
-    INCLUDEDIRECTIVE,
-    LOOP,
-    PARAMETERDECLARATION,
-    PARAMETERDECLARATIONLIST,
-    PARAMETERLIST,
-    PRIMARY,
-    PROGRAM,
-    RELATION,
-    RETURNSTATEMENT,
-    STATEMENT,
-    TERM,
-    TYPESPECIFIER,
-    VARIABLEDECLARATION,
-    VARIABLEDECLARATIONLIST,
-    VARIABLEIDENTIFIER,
-    WHILESTATEMENT
-}
 
 /*
  * Parser Rules
@@ -93,7 +54,7 @@ conjunction : comparison | conjunction '&&' comparison;
 
 comparison : relation | relation EQUALITY relation | relation NEQUALITY relation;
 
-relation : equation | equation (LEFTANGLE | RIGHTANGLE) equation;
+relation : equation | equation (LEFTANGLE | RIGHTANGLE | LEFTANGLEEQUAL | RIGHTANGLEEQUAL) equation;
 
 equation : equation PLUS term | equation MINUS term | term;
 
@@ -160,6 +121,8 @@ ASSIGN : '=';
 COMMA : ',';
 LEFTANGLE : '<';
 RIGHTANGLE : '>';
+LEFTANGLEEQUAL : '<=';
+RIGHTANGLEEQUAL : '>=';
 LEFTPARENTHESIS : '(';
 RIGHTPARENTHESIS : ')';
 LEFTCURLY : '{';
