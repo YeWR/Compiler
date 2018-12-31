@@ -179,7 +179,8 @@ class GeneratorVisitor(SmallCVisitor):
         else:
             return self.visit(ctx.relation())
 
-    def visitRelation(self, ctx:SmallCParser.RelationContext):
+    #def visitRelation(self, ctx:SmallCParser.RelationContext):
+
 
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
         builder = IRBuilder(self.block_stack[-1])
