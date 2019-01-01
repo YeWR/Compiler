@@ -1,8 +1,10 @@
-int printf(char* a, char* b);
+int printf(char* a, ...);
 int main()
 {
-    char src[1000];
-    src[0] = '\0';
-    printf("%s",src);
+    int a = 1;
+    while(a)
+    {
+        int b = 1;
+    }
     return 0;
 }

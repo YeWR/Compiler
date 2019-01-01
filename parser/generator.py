@@ -23,6 +23,7 @@ class GeneratorVisitor(SmallCVisitor):
         self.NamedValues = dict()
         self.counter = 0
         self.loop_stack = []
+        self.signal_stack = []
         self.cond_stack = []
         self.var_stack = []
         self.cur_decl_type = None
@@ -172,11 +173,13 @@ class GeneratorVisitor(SmallCVisitor):
             value = self.getVal_of_expr(ctx.expr())
             return self.Builder.ret(value)
         elif ctx.CONTINUE():
+            self.signal_stack[-1] = 1
             loop_blocks = self.loop_stack[-1]
             self.Builder.branch(loop_blocks['continue'])
             self.Builder.position_at_start(loop_blocks['buf'])
             return None
         elif ctx.BREAK():
+            self.signal_stack[-1] = -1
             loop_blocks = self.loop_stack[-1]
             self.Builder.branch(loop_blocks['break'])
             self.Builder.position_at_start(loop_blocks['buf'])
@@ -285,6 +288,8 @@ class GeneratorVisitor(SmallCVisitor):
         stmt_block = func.append_basic_block()
         self.var_stack.append({})
         loop_block = func.append_basic_block()
+        # 1 -> continue, -1 -> break
+        self.signal_stack.append(0)
 
         self.loop_stack.append({'continue': cond_block, 'break': end_block, 'buf': loop_block})
 
@@ -312,10 +317,15 @@ class GeneratorVisitor(SmallCVisitor):
             self.visit(expr)
             self.visit(ctx.stmt())
             self.Builder.branch(cond_block)
+            if self.signal_stack[-1] == 0:
+                loop_blocks = self.loop_stack[-1]
+                self.Builder.position_at_start(loop_blocks['buf'])
+                self.Builder.branch(end_block)
 
         self.Builder.position_at_start(end_block)
 
         self.loop_stack.pop()
+        self.signal_stack.pop()
 
         self.var_stack.pop()
         self.var_stack.pop()
@@ -332,6 +342,8 @@ class GeneratorVisitor(SmallCVisitor):
         stmt_block = func.append_basic_block()
         self.var_stack.append({})
         loop_block = func.append_basic_block()
+        # 1 -> continue, -1 -> break
+        self.signal_stack.append(0)
 
         self.loop_stack.append({'continue': cond_block, 'break': end_block, 'buf': loop_block})
 
@@ -345,10 +357,15 @@ class GeneratorVisitor(SmallCVisitor):
         with self.Builder.goto_block(stmt_block):
             self.visit(ctx.stmt())
             self.Builder.branch(cond_block)
+            if self.signal_stack[-1] == 0:
+                loop_blocks = self.loop_stack[-1]
+                self.Builder.position_at_start(loop_blocks['buf'])
+                self.Builder.branch(end_block)
 
         self.Builder.position_at_start(end_block)
 
         self.loop_stack.pop()
+        self.signal_stack.pop()
 
         self.var_stack.pop()
         self.var_stack.pop()
