@@ -52,9 +52,13 @@ class GeneratorVisitor(SmallCVisitor):
             value = temp
         else:
             temp_ptr = var_map[temp.IDENTIFIER().getText()]['ptr']
-            if temp.array_indexing():
-                index = self.getVal_of_expr(temp.array_indexing().expr())
-                temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+            if isinstance(var_map[temp.IDENTIFIER().getText()]['type'],ArrayType):
+                if temp.array_indexing():
+                    index = self.getVal_of_expr(temp.array_indexing().expr())
+                    temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+                else: #返回数组地址
+                    temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
+                    return temp_ptr
             value = self.Builder.load(temp_ptr)
         return value
 
