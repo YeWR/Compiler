@@ -52,7 +52,7 @@ class GeneratorVisitor(SmallCVisitor):
         if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp,LoadInstr) or isinstance(temp,Instruction):
             value = temp
         else:
-            temp_ptr = var_map[temp.IDENTIFIER().getText()]['ptr']
+            temp_ptr = self.getVal_local(temp.IDENTIFIER().getText())['ptr']
             if temp.array_indexing():
                 index = self.getVal_of_expr(temp.array_indexing().expr())
                 temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
@@ -303,6 +303,9 @@ class GeneratorVisitor(SmallCVisitor):
         self.var_stack.append({})
         stmt_block = func.append_basic_block()
         self.var_stack.append({})
+        loop_block = func.append_basic_block()
+
+        self.loop_stack.append({'continue': cond_block, 'break': end_block, 'buf': loop_block})
 
         self.Builder.branch(cond_block)
 
@@ -316,6 +319,8 @@ class GeneratorVisitor(SmallCVisitor):
             self.Builder.branch(cond_block)
 
         self.Builder.position_at_start(end_block)
+
+        self.loop_stack.pop()
 
         self.var_stack.pop()
         self.var_stack.pop()

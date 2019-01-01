@@ -1,12 +1,11 @@
 int main()
 {
-    for (int i = 1; i < 2; i = 3)
+    int a = 1;
+    while(a)
     {
-        int a = 1;
-        if (a)
-        {
-            break;
-        }
+        a = 0;
+        continue;
+        int b = 1;
     }
     return 0;
 }
