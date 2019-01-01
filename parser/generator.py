@@ -48,7 +48,6 @@ class GeneratorVisitor(SmallCVisitor):
         return self.Builder.icmp_signed('!=', value, zero)
 
     def getVal_of_expr(self, expr):
-        var_map = self.var_stack[-1]
         temp = self.visit(expr)
         if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp, LoadInstr) or isinstance(temp,
                                                                                                                   Instruction):
@@ -249,8 +248,12 @@ class GeneratorVisitor(SmallCVisitor):
     def visitCondition(self, ctx: SmallCParser.ConditionContext):
         if ctx.expr():
             disjunction = self.getVal_of_expr(ctx.disjunction())
+            if isinstance(disjunction.type, PointerType):
+                disjunction = self.Builder.load(disjunction)
             cond = self.Builder.icmp_signed('!=', disjunction, Constant(disjunction.type, 0))
             expr = self.getVal_of_expr(ctx.expr())
+            if isinstance(expr.type, PointerType):
+                expr = self.Builder.load(expr)
             condition = self.getVal_of_expr(ctx.condition())
             return self.Builder.select(cond, expr, condition)
         else:
@@ -259,7 +262,11 @@ class GeneratorVisitor(SmallCVisitor):
     def visitDisjunction(self, ctx: SmallCParser.DisjunctionContext):
         if ctx.disjunction():
             disjunction = self.getVal_of_expr(ctx.disjunction())
+            if isinstance(disjunction.type, PointerType):
+                disjunction = self.Builder.load(disjunction)
             conjunction = self.getVal_of_expr(ctx.conjunction())
+            if isinstance(conjunction.type, PointerType):
+                conjunction = self.Builder.load(conjunction)
             left = self.Builder.icmp_signed('!=', disjunction, Constant(disjunction.type, 0))
             right = self.Builder.icmp_signed('!=', conjunction, Constant(conjunction.type, 0))
             return self.Builder.or_(left, right)
@@ -269,7 +276,11 @@ class GeneratorVisitor(SmallCVisitor):
     def visitConjunction(self, ctx: SmallCParser.ConjunctionContext):
         if ctx.conjunction():
             conjunction = self.getVal_of_expr(ctx.conjunction())
+            if isinstance(conjunction.type, PointerType):
+                conjunction = self.Builder.load(conjunction)
             comparison = self.getVal_of_expr(ctx.comparison())
+            if isinstance(comparison.type, PointerType):
+                comparison = self.Builder.load(comparison)
             left = self.Builder.icmp_signed('!=', conjunction, Constant(conjunction.type, 0))
             right = self.Builder.icmp_signed('!=', comparison, Constant(comparison.type, 0))
             return self.Builder.and_(left, right)
@@ -279,11 +290,19 @@ class GeneratorVisitor(SmallCVisitor):
     def visitComparison(self, ctx: SmallCParser.ComparisonContext):
         if ctx.EQUALITY():
             relation1 = self.getVal_of_expr(ctx.relation(0))
+            if isinstance(relation1.type, PointerType):
+                relation1 = self.Builder.load(relation1)
             relation2 = self.getVal_of_expr(ctx.relation(1))
+            if isinstance(relation2.type, PointerType):
+                relation2 = self.Builder.load(relation2)
             return self.Builder.icmp_signed('==', relation1, relation2)
         elif ctx.NEQUALITY():
             relation1 = self.getVal_of_expr(ctx.relation(0))
+            if isinstance(relation1.type, PointerType):
+                relation1 = self.Builder.load(relation1)
             relation2 = self.getVal_of_expr(ctx.relation(1))
+            if isinstance(relation2.type, PointerType):
+                relation2 = self.Builder.load(relation2)
             return self.Builder.icmp_signed('!=', relation1, relation2)
         else:
             return self.getVal_of_expr(ctx.relation(0))
@@ -291,7 +310,11 @@ class GeneratorVisitor(SmallCVisitor):
     def visitRelation(self, ctx: SmallCParser.RelationContext):
         if len(ctx.equation()) > 1:
             equation1 = self.getVal_of_expr(ctx.equation(0))
+            if isinstance(equation1.type, PointerType):
+                equation1 = self.Builder.load(equation1)
             equation2 = self.getVal_of_expr(ctx.equation(1))
+            if isinstance(equation2.type, PointerType):
+                equation2 = self.Builder.load(equation2)
             if ctx.LEFTANGLE():
                 value = self.Builder.icmp_signed('<', equation1, equation2)
             elif ctx.RIGHTANGLE():
@@ -433,8 +456,26 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitVariable_id(self, ctx: SmallCParser.Variable_idContext):
         identifier = ctx.identifier()
-        var_map = self.var_stack[-1]
         type = self.cur_decl_type
+
+        if not self.function:
+            if identifier.array_indexing():
+                length = self.getVal_of_expr(identifier.array_indexing().expr())
+                type = ArrayType(type, length.constant)
+                g_var = GlobalVariable(self.Module, type, identifier.IDENTIFIER().getText())
+            else:
+                g_var = GlobalVariable(self.Module, type, identifier.IDENTIFIER().getText())
+
+            g_var.initializer = Constant(type, None)
+            atomic = {"id": identifier.IDENTIFIER().getText(), "type": type,
+                                                      "value": None, "ptr": g_var}
+            if not len(self.var_stack):
+                self.var_stack.append({})
+            self.var_stack[0][identifier.IDENTIFIER().getText()] = atomic
+            return g_var
+
+        var_map = self.var_stack[-1]
+
         if identifier.array_indexing():
             length = self.getVal_of_expr(identifier.array_indexing().expr())
             type = ArrayType(type, length.constant)
@@ -484,9 +525,21 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitTerm(self, ctx: SmallCParser.TermContext):
         if (ctx.ASTERIKS()):
-            return self.Builder.mul(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
+            term = self.getVal_of_expr(ctx.term())
+            if isinstance(term.type, PointerType):
+                term = self.Builder.load(term)
+            factor = self.getVal_of_expr(ctx.factor())
+            if isinstance(factor.type, PointerType):
+                factor = self.Builder.load(factor)
+            return self.Builder.mul(term, factor)
         if (ctx.SLASH()):
-            return self.Builder.fdiv(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
+            term = self.getVal_of_expr(ctx.term())
+            if isinstance(term.type, PointerType):
+                term = self.Builder.load(term)
+            factor = self.getVal_of_expr(ctx.factor())
+            if isinstance(factor.type, PointerType):
+                factor = self.Builder.load(factor)
+            return self.Builder.fdiv(term, factor)
         return self.visitChildren(ctx)
 
     def visitEquation(self, ctx: SmallCParser.EquationContext):
