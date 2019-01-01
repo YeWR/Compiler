@@ -41,12 +41,11 @@ class GeneratorVisitor(SmallCVisitor):
         print("Error: ", info)
         return 0
 
-    def toBool(self, builder, value):
+    def toBool(self, value):
         zero = Constant(self.getType('bool'), 0)
-        return builder.icmp_signed('!=', value, zero)
+        return self.Builder.icmp_signed('!=', value, zero)
 
     def getVal_of_expr(self, expr):
-        var_map = self.var_stack[-1]
         temp = self.visit(expr)
         if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp,LoadInstr) or isinstance(temp,Instruction):
             value = temp
@@ -73,7 +72,7 @@ class GeneratorVisitor(SmallCVisitor):
     def getVal_local(self, id):
         temp_maps = self.var_stack[::-1]
         for map in temp_maps:
-            if map[id]:
+            if id in map.keys():
                 return map[id]
         self.error("value error in <getVal_local>")
         return None
@@ -234,22 +233,65 @@ class GeneratorVisitor(SmallCVisitor):
         else:
             return self.getVal_of_expr(ctx.equation(0))
 
+    def visitFor_stmt(self, ctx: SmallCParser.For_stmtContext):
+        func = self.function_dict[self.function]
+
+        end_block = func.append_basic_block()
+        self.var_stack.append({})
+        decl_block = func.append_basic_block()
+        self.var_stack.append({})
+        cond_block = func.append_basic_block()
+        self.var_stack.append({})
+        stmt_block = func.append_basic_block()
+        self.var_stack.append({})
+
+        with self.Builder.goto_block(decl_block):
+        # self.Builder.position_at_start(end_block)
+            if ctx.var_decl():
+                self.visit(ctx.var_decl())
+            elif ctx.var_decl_list():
+                self.visit(ctx.var_decl_list())
+            else:
+                self.error("for error in <visitFor_stmt>")
+            self.Builder.branch(cond_block)
+
+        self.Builder.branch(decl_block)
+        with self.Builder.goto_block(cond_block):
+            # cond_expr
+            cond_expr = ctx.expr(0)
+            cond_expr = self.visit(cond_expr)
+            cond_expr = self.toBool(cond_expr)
+            self.Builder.cbranch(cond_expr, stmt_block, end_block)
+
+        with self.Builder.goto_block(stmt_block):
+            # expr
+            expr = ctx.expr(1)
+            self.visit(expr)
+            self.visit(ctx.stmt())
+            self.Builder.branch(cond_block)
+
+        self.Builder.position_at_start(end_block)
+
+        self.var_stack.pop()
+        self.var_stack.pop()
+        self.var_stack.pop()
+        self.var_stack.pop()
+
     def visitWhile_stmt(self, ctx: SmallCParser.While_stmtContext):
         func = self.function_dict[self.function]
 
         end_block = func.append_basic_block()
-        self.block_stack.append(end_block)
-
+        self.var_stack.append({})
         cond_block = func.append_basic_block()
-        self.block_stack.append(cond_block)
+        self.var_stack.append({})
         stmt_block = func.append_basic_block()
-        self.block_stack.append(stmt_block)
+        self.var_stack.append({})
 
         self.Builder.branch(cond_block)
 
         with self.Builder.goto_block(cond_block):
             expr = self.getVal_of_expr(ctx.expr())
-            cond_expr = self.toBool(self.Builder, expr)
+            cond_expr = self.toBool(expr)
             self.Builder.cbranch(cond_expr, stmt_block, end_block)
 
         with self.Builder.goto_block(stmt_block):
@@ -258,17 +300,16 @@ class GeneratorVisitor(SmallCVisitor):
 
         self.Builder.position_at_start(end_block)
 
-        self.block_stack.pop()
-        self.block_stack.pop()
-        self.block_stack.pop()
-
+        self.var_stack.pop()
+        self.var_stack.pop()
+        self.var_stack.pop()
 
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
         var_map = self.var_stack[-1]
 
         expr = self.getVal_of_expr(ctx.expr())
 
-        cond_expr = self.toBool(self.Builder, expr)
+        cond_expr = self.toBool(expr)
         else_expr = ctx.ELSE()
 
         if else_expr:
@@ -329,6 +370,24 @@ class GeneratorVisitor(SmallCVisitor):
         elif ctx.functioncall():
             return self.visit(ctx.functioncall())
         elif ctx.expr():
-            return ctx.expr()
+            return self.visit(ctx.expr()) # to do
         else:
             return self.error("type error in <visitPrimary>")
+
+
+    def visitFactor(self, ctx: SmallCParser.FactorContext):
+        return self.visitChildren(ctx)
+
+    def visitTerm(self, ctx:SmallCParser.TermContext):
+        if(ctx.ASTERIKS()):
+            return self.Builder.mul(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
+        if(ctx.SLASH()):
+            return self.Builder.fdiv(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
+        return self.visitChildren(ctx)
+
+    def visitEquation(self, ctx:SmallCParser.EquationContext):
+        if(ctx.PLUS()):
+            return self.Builder.add(self.getVal_of_expr(ctx.equation()),self.getVal_of_expr(ctx.term()))
+        if(ctx.MINUS()):
+            return self.Builder.sub(self.getVal_of_expr(ctx.equation()), self.getVal_of_expr(ctx.term()))
+        return self.visitChildren(ctx)
