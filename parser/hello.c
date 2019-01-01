@@ -1,14 +1,12 @@
-int main()
+void gg()
 {
     int a = 1;
-    int b = a;
+}
 
-    if(a)
-    {
-        b = 1;
-    }
-    else
-    {
-        b = 0;
-    }
+int main()
+{
+    int b[3];
+    int* e;
+    e = &b;
+    return 0;
 }

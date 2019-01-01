@@ -22,7 +22,8 @@ class GeneratorVisitor(SmallCVisitor):
         self.function = None
         self.NamedValues = dict()
         self.counter = 0
-        self.block_stack = []
+        self.loop_stack = []
+        self.cond_stack = []
         self.var_stack = []
         self.cur_decl_type = None
 
@@ -41,12 +42,31 @@ class GeneratorVisitor(SmallCVisitor):
         print("Error: ", info)
         return 0
 
-    def toBool(self, builder, value):
+    def toBool(self, value):
         zero = Constant(self.getType('bool'), 0)
-        return builder.icmp_signed('!=', value, zero)
+        return self.Builder.icmp_signed('!=', value, zero)
 
-    def tempVal(self, builder, ptr):
-        return builder.load(ptr)
+    def getVal_of_expr(self, expr):
+        var_map = self.var_stack[-1]
+        temp = self.visit(expr)
+        if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp,LoadInstr) or isinstance(temp,Instruction):
+            value = temp
+        else:
+            temp_val = self.getVal_local(temp.IDENTIFIER().getText())
+            temp_ptr = temp_val['ptr']
+            if isinstance(temp_val['type'],ArrayType):
+                if temp.array_indexing():
+                    index = self.getVal_of_expr(temp.array_indexing().expr())
+                    temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+                elif temp.AMPERSAND():
+                    Constant(PointerType(IntType(8)), temp_ptr.getText())
+                elif temp.ASTERIKS():
+                    pass
+                else: #返回数组地址
+                    temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
+                    return temp_ptr
+            value = self.Builder.load(temp_ptr)
+        return value
 
     def getType(self, type):
         if type == 'int':
@@ -57,8 +77,18 @@ class GeneratorVisitor(SmallCVisitor):
             return FloatType()
         elif type == 'bool':
             return IntType(1)
+        elif type == 'void':
+            return VoidType()
         else:
             self.error("type error in <getType>")
+
+    def getVal_local(self, id):
+        temp_maps = self.var_stack[::-1]
+        for map in temp_maps:
+            if id in map.keys():
+                return map[id]
+        self.error("value error in <getVal_local>")
+        return None
 
     def visitFunction_definition(self, ctx: SmallCParser.Function_definitionContext):
         retType = self.getType(ctx.type_specifier().getText())
@@ -67,12 +97,15 @@ class GeneratorVisitor(SmallCVisitor):
         # args
         if ctx.param_decl_list():
             args = ctx.param_decl_list()
-
+            var_arg = False
             for t in args.getChildren():
                 if t.getText() != ',':
+                    if t.getText == '...':
+                        var_arg = True
+                        break
                     argsType.append(self.getType(t.type_specifier().getText()))
                     argsName.append(t.identifier().getText())
-            funcType = FunctionType(retType, tuple(argsType))
+            funcType = FunctionType(retType, tuple(argsType),var_arg=var_arg)
         # no args
         else:
             funcType = FunctionType(retType, ())
@@ -94,13 +127,25 @@ class GeneratorVisitor(SmallCVisitor):
                 alloca = self.Builder.alloca(arg.type, name=arg.name)
                 self.Builder.store(arg, alloca)
                 varDict[arg.name] = alloca
-            self.block_stack.append(block)
             self.var_stack.append(varDict)
             self.visit(ctx.compound_stmt())
-            self.block_stack.pop()
+            if isinstance(retType, VoidType):
+                self.Builder.ret_void()
             self.var_stack.pop()
             self.function = None
-            self.Builder = None
+        return
+
+    def visitFunctioncall(self, ctx: SmallCParser.FunctioncallContext):
+        var_map = self.var_stack[-1]
+        args = []
+        if ctx.param_list():
+            for param in ctx.param_list().getChildren():
+                if(param.getText() == ','):
+                    continue
+                temp = self.getVal_of_expr(param)
+                args.append(temp)
+        function = self.function_dict[ctx.identifier().getText()]
+        return self.Builder.call(function, args)
 
     # def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
     #     type = self.getType(ctx.type_specifier())
@@ -117,43 +162,212 @@ class GeneratorVisitor(SmallCVisitor):
     #     return
 
     def visitStmt(self, ctx: SmallCParser.StmtContext):
-        return self.visitChildren(ctx)
+        if ctx.RETURN():
+            value = self.getVal_of_expr(ctx.expr())
+            return self.Builder.ret(value)
+        elif ctx.CONTINUE():
+            loop_blocks = self.loop_stack[-1]
+            self.Builder.branch(loop_blocks['continue'])
+            self.Builder.position_at_start(loop_blocks['buf'])
+            return None
+        elif ctx.BREAK():
+            loop_blocks = self.loop_stack[-1]
+            self.Builder.branch(loop_blocks['break'])
+            self.Builder.position_at_start(loop_blocks['buf'])
+        else:
+            return self.visitChildren(ctx)
 
     def visitCompound_stmt(self, ctx: SmallCParser.Compound_stmtContext):
-        return self.visitChildren(ctx)
+        # builder = IRBuilder(self.block_stack[-1])
+        # block = self.Builder.append_basic_block()
+        # self.block_stack.append(block)
+        # with self.Builder.goto_block(block):
+        result = self.visitChildren(ctx)
+        # self.block_stack.pop()
+        return result
 
     def visitAssignment(self, ctx: SmallCParser.AssignmentContext):
-        return self.visitChildren(ctx)
-        # block = self.Builder.block
-        # identifier = ctx.identifier()
-        # expr = self.visit(ctx.expr())
-        # result = self.Builder().store(value=expr, ptr=, align=4)
+        value = self.getVal_of_expr(ctx.expr())
+        identifier = ctx.identifier()
+        identifier = self.getVal_local(identifier.IDENTIFIER().getText())
+        if isinstance(identifier['type'],ArrayType):
+            if ctx.identifier().array_indexing():
+                index = self.getVal_of_expr(ctx.identifier().array_indexing().expr())
+            else:
+                index = Constant(IntType(32),0)
+            tempPtr = self.Builder.gep(identifier['ptr'],[Constant(IntType(32),0),index], inbounds=True)
+            if isinstance(value,GEPInstr):
+                value = self.Builder.load(value)
+            return self.Builder.store(value, tempPtr)
+        return self.Builder.store(value, identifier['ptr'])
 
     def visitExpr(self, ctx: SmallCParser.ExprContext):
-        return self.visitChildren(ctx)
+        if ctx.condition():
+            return self.visit(ctx.condition())
+        elif ctx.assignment():
+            return self.visit(ctx.assignment())
+        elif ctx.functioncall():
+            return self.visit(ctx.functioncall())
+
+    def visitCondition(self, ctx:SmallCParser.ConditionContext):
+        if ctx.expr():
+            disjunction = self.getVal_of_expr(ctx.disjunction())
+            cond = self.Builder.icmp_signed('!=', disjunction, Constant(disjunction.type, 0))
+            expr = self.getVal_of_expr(ctx.expr())
+            condition = self.getVal_of_expr(ctx.condition())
+            return self.Builder.select(cond,expr,condition)
+        else:
+            return self.getVal_of_expr(ctx.disjunction())
+
+    def visitDisjunction(self, ctx:SmallCParser.DisjunctionContext):
+        if ctx.disjunction():
+            disjunction = self.getVal_of_expr(ctx.disjunction())
+            conjunction = self.getVal_of_expr(ctx.conjunction())
+            left = self.Builder.icmp_signed('!=',disjunction,Constant(disjunction.type,0))
+            right = self.Builder.icmp_signed('!=', conjunction, Constant(conjunction.type, 0))
+            return self.Builder.or_(left,right)
+        else:
+            return self.getVal_of_expr(ctx.conjunction())
+
+    def visitConjunction(self, ctx:SmallCParser.ConjunctionContext):
+        if ctx.conjunction():
+            conjunction = self.getVal_of_expr(ctx.conjunction())
+            comparison = self.getVal_of_expr(ctx.comparison())
+            left = self.Builder.icmp_signed('!=', conjunction, Constant(conjunction.type, 0))
+            right = self.Builder.icmp_signed('!=', comparison, Constant(comparison.type, 0))
+            return self.Builder.and_(left,right)
+        else:
+            return self.getVal_of_expr(ctx.comparison())
+
+    def visitComparison(self, ctx:SmallCParser.ComparisonContext):
+        if ctx.EQUALITY():
+            relation1 = self.getVal_of_expr(ctx.relation(0))
+            relation2 = self.getVal_of_expr(ctx.relation(1))
+            return self.Builder.icmp_signed('==',relation1,relation2)
+        elif ctx.NEQUALITY():
+            relation1 = self.getVal_of_expr(ctx.relation(0))
+            relation2 = self.getVal_of_expr(ctx.relation(1))
+            return self.Builder.icmp_signed('!=', relation1, relation2)
+        else:
+            return self.getVal_of_expr(ctx.relation(0))
+
+    def visitRelation(self, ctx:SmallCParser.RelationContext):
+        if len(ctx.equation()) > 1:
+            equation1 = self.getVal_of_expr(ctx.equation(0))
+            equation2 = self.getVal_of_expr(ctx.equation(1))
+            if ctx.LEFTANGLE():
+                value = self.Builder.icmp_signed('<',equation1,equation2)
+            elif ctx.RIGHTANGLE():
+                value = self.Builder.icmp_signed('>',equation1,equation2)
+            elif ctx.LEFTANGLEEQUAL():
+                value = self.Builder.icmp_signed('<=',equation1,equation2)
+            elif ctx.RIGHTANGLEEQUAL():
+                value = self.Builder.icmp_signed('>=',equation1,equation2)
+            return value
+        else:
+            return self.getVal_of_expr(ctx.equation(0))
+
+    def visitFor_stmt(self, ctx: SmallCParser.For_stmtContext):
+        func = self.function_dict[self.function]
+
+        end_block = func.append_basic_block()
+        self.var_stack.append({})
+        decl_block = func.append_basic_block()
+        self.var_stack.append({})
+        cond_block = func.append_basic_block()
+        self.var_stack.append({})
+        stmt_block = func.append_basic_block()
+        self.var_stack.append({})
+        loop_block = func.append_basic_block()
+
+        self.loop_stack.append({'continue': cond_block, 'break': end_block, 'buf': loop_block})
+
+        with self.Builder.goto_block(decl_block):
+        # self.Builder.position_at_start(end_block)
+            if ctx.var_decl():
+                self.visit(ctx.var_decl())
+            elif ctx.var_decl_list():
+                self.visit(ctx.var_decl_list())
+            else:
+                self.error("for error in <visitFor_stmt>")
+            self.Builder.branch(cond_block)
+
+        self.Builder.branch(decl_block)
+        with self.Builder.goto_block(cond_block):
+            # cond_expr
+            cond_expr = ctx.expr(0)
+            cond_expr = self.visit(cond_expr)
+            cond_expr = self.toBool(cond_expr)
+            self.Builder.cbranch(cond_expr, stmt_block, end_block)
+
+        with self.Builder.goto_block(stmt_block):
+            # expr
+            expr = ctx.expr(1)
+            self.visit(expr)
+            self.visit(ctx.stmt())
+            self.Builder.branch(cond_block)
+
+        self.Builder.position_at_start(end_block)
+
+        self.loop_stack.pop()
+
+        self.var_stack.pop()
+        self.var_stack.pop()
+        self.var_stack.pop()
+        self.var_stack.pop()
+
+    def visitWhile_stmt(self, ctx: SmallCParser.While_stmtContext):
+        func = self.function_dict[self.function]
+
+        end_block = func.append_basic_block()
+        self.var_stack.append({})
+        cond_block = func.append_basic_block()
+        self.var_stack.append({})
+        stmt_block = func.append_basic_block()
+        self.var_stack.append({})
+        loop_block = func.append_basic_block()
+
+        self.loop_stack.append({'continue': cond_block, 'break': end_block, 'buf': loop_block})
+
+        self.Builder.branch(cond_block)
+
+        with self.Builder.goto_block(cond_block):
+            expr = self.getVal_of_expr(ctx.expr())
+            cond_expr = self.toBool(expr)
+            self.Builder.cbranch(cond_expr, stmt_block, end_block)
+
+        with self.Builder.goto_block(stmt_block):
+            self.visit(ctx.stmt())
+            self.Builder.branch(cond_block)
+
+        self.Builder.position_at_start(end_block)
+
+        self.loop_stack.pop()
+
+        self.var_stack.pop()
+        self.var_stack.pop()
+        self.var_stack.pop()
 
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
-        builder = IRBuilder(self.block_stack[-1])
         var_map = self.var_stack[-1]
 
-        temp = self.visit(ctx.expr())
-        if not isinstance(temp, Constant):
-            temp_ptr = var_map[temp.getText()]['ptr']
-            expr = self.tempVal(builder, temp_ptr)
-        else:
-            expr = temp
+        expr = self.getVal_of_expr(ctx.expr())
 
-        cond_expr = self.toBool(builder, expr)
+        cond_expr = self.toBool(expr)
         else_expr = ctx.ELSE()
 
-        with builder.if_else(cond_expr) as (then, otherwise):
-            with then:
-                true_stmt = ctx.stmt(0)
-                self.visit(true_stmt)
-            with otherwise:
-                if else_expr:
+        if else_expr:
+            with self.Builder.if_else(cond_expr) as (then, otherwise):
+                with then:
+                    true_stmt = ctx.stmt(0)
+                    self.visit(true_stmt)
+                with otherwise:
                     else_stmt = ctx.stmt(1)
                     self.visit(else_stmt)
+        else:
+            with self.Builder.if_then(cond_expr):
+                true_stmt = ctx.stmt(0)
+                self.visit(true_stmt)
 
     def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
         self.cur_decl_type = self.getType(ctx.type_specifier().getText())
@@ -168,44 +382,77 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitVariable_id(self, ctx: SmallCParser.Variable_idContext):
         identifier = ctx.identifier()
-        builder = IRBuilder(self.block_stack[-1])
         var_map = self.var_stack[-1]
         type = self.cur_decl_type
-        ptr = builder.alloca(typ=type, name=identifier.getText())
+        if identifier.array_indexing():
+            length = self.getVal_of_expr(identifier.array_indexing().expr())
+            type = ArrayType(type,length.constant)
+            ptr = self.Builder.alloca(typ=type, name=identifier.IDENTIFIER().getText())
+        else:
+            ptr = self.Builder.alloca(typ=type, name=identifier.IDENTIFIER().getText())
 
         expr = ctx.expr()
         if expr:
-            temp = self.visit(expr)
-            if not isinstance(temp, Constant):
-                temp_ptr = var_map[temp.getText()]['ptr']
-                value = self.tempVal(builder, temp_ptr)
-            else:
-                value = temp
+            value = self.getVal_of_expr(expr)
         else:
             value = Constant(type, None)
-
-        builder.store(value, ptr)
-
-        var_map[identifier.getText()] = {"id": identifier.getText(), "type": type, "value": value, "ptr": ptr}
+        self.Builder.store(value, ptr)
+        var_map[identifier.IDENTIFIER().getText()] = {"id": identifier.IDENTIFIER().getText(), "type": type, "value": value, "ptr": ptr}
         return ptr
-
-    def visitExpr(self, ctx: SmallCParser.ExprContext):
-        return self.visitChildren(ctx)
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
         if ctx.BOOLEAN():
-            return Constant(IntType(1), ctx.getText())
+            return Constant(IntType(1), bool(ctx.getText()))
         elif ctx.INTEGER():
-            return Constant(IntType(32), ctx.getText())
+            return Constant(IntType(32), int(ctx.getText()))
         elif ctx.REAL():
-            return Constant(FloatType, ctx.getText())
+            return Constant(FloatType, float(ctx.getText()))
         elif ctx.CHARCONST():
-            return Constant(IntType(8), ctx.getText())
+            if ctx.getText()[0] == '"':
+                tempStr = ctx.getText()[1:-1]
+                tempStr = tempStr.replace('\\n','\n')
+                tempStr += '\0'
+                ptr = self.Builder.alloca(typ=ArrayType(IntType(8),len(tempStr)), name="str_" + tempStr)
+                ptr.initializer = Constant(ArrayType(IntType(8),len(tempStr)),bytearray(tempStr,'utf-8'))
+                return self.Builder.gep(ptr,[Constant(IntType(32),0),Constant(IntType(32),0)], inbounds=True)
+            return Constant(IntType(8), ctx.getText()[1:-1])
         elif ctx.identifier():
-            return ctx.identifier()
+            return self.visit(ctx.identifier())
         elif ctx.functioncall():
-            return
+            return self.visit(ctx.functioncall())
         elif ctx.expr():
-            return
+            return self.visit(ctx.expr())
         else:
             return self.error("type error in <visitPrimary>")
+
+
+    def visitFactor(self, ctx: SmallCParser.FactorContext):
+        return self.visitChildren(ctx)
+
+    def visitTerm(self, ctx:SmallCParser.TermContext):
+        if(ctx.ASTERIKS()):
+            return self.Builder.mul(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
+        if(ctx.SLASH()):
+            return self.Builder.fdiv(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
+        return self.visitChildren(ctx)
+
+    def visitEquation(self, ctx:SmallCParser.EquationContext):
+        if(ctx.PLUS()):
+            return self.Builder.add(self.getVal_of_expr(ctx.equation()),self.getVal_of_expr(ctx.term()))
+        if(ctx.MINUS()):
+            return self.Builder.sub(self.getVal_of_expr(ctx.equation()), self.getVal_of_expr(ctx.term()))
+        return self.visitChildren(ctx)
+
+    def visitIdentifier(self, ctx:SmallCParser.IdentifierContext):
+        if(ctx.AMPERSAND() and ctx.array_indexing()):
+            return self.Builder.gep(self.getVal_of_expr(ctx.IDENTIFIER()), self.getVal_of_expr(ctx.array_indexing()))
+        if(ctx.ASTERIKS() and ctx.array_indexing()):
+            return self.Builder.load(self.Builder.gep(self.getVal_of_expr(ctx.IDENTIFIER()), self.getVal_of_expr(ctx.array_indexing())))
+        if(ctx.AMPERSAND()):
+            return self.getVal_local(str(ctx.IDENTIFIER()))['ptr']
+        if(ctx.ASTERIKS()):
+            return self.getVal_local(str(ctx.IDENTIFIER()))['ptr']
+        return self.visitChildren(ctx)
+
+    def visitArray_indexing(self, ctx:SmallCParser.Array_indexingContext):
+        return self.visit(ctx.expr())
