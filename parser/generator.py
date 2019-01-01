@@ -91,8 +91,8 @@ class GeneratorVisitor(SmallCVisitor):
             self.Builder = IRBuilder(block)
             for i, arg in enumerate(func.args):
                 arg.name = argsName[i]
-                alloca = self.Builder.alloca(arg.type,name=arg.name)
-                self.Builder.store(arg,alloca)
+                alloca = self.Builder.alloca(arg.type, name=arg.name)
+                self.Builder.store(arg, alloca)
                 varDict[arg.name] = alloca
             self.block_stack.append(block)
             self.var_stack.append(varDict)
@@ -102,14 +102,13 @@ class GeneratorVisitor(SmallCVisitor):
             self.function = None
         return
 
-    def visitFunctioncall(self, ctx:SmallCParser.FunctioncallContext):
+    def visitFunctioncall(self, ctx: SmallCParser.FunctioncallContext):
         args = []
-        builder = IRBuilder(self.block_stack[-1])
         if ctx.param_list():
             for param in ctx.param_list().getChildren():
                 temp = self.visit(param)
                 args.append(temp)
-        return self.Builder.call(self.function_dict[ctx.identifier().getText()],args)
+        return self.Builder.call(self.function_dict[ctx.identifier().getText()], args)
 
     # def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
     #     type = self.getType(ctx.type_specifier())
@@ -126,6 +125,8 @@ class GeneratorVisitor(SmallCVisitor):
     #     return
 
     def visitStmt(self, ctx: SmallCParser.StmtContext):
+        if ctx.RETURN():
+            self.Builder.ret(Constant(self.getType('int'), 0))
         return self.visitChildren(ctx)
 
     def visitCompound_stmt(self, ctx: SmallCParser.Compound_stmtContext):
@@ -184,11 +185,9 @@ class GeneratorVisitor(SmallCVisitor):
     #     else:
     #         return self.visit(ctx.relation())
 
-    #def visitRelation(self, ctx:SmallCParser.RelationContext):
-
+    # def visitRelation(self, ctx:SmallCParser.RelationContext):
 
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
-        builder = IRBuilder(self.block_stack[-1])
         var_map = self.var_stack[-1]
 
         temp = self.visit(ctx.expr())
