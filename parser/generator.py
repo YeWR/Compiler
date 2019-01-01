@@ -179,8 +179,13 @@ class GeneratorVisitor(SmallCVisitor):
         identifier = ctx.identifier()
         identifier = self.getVal_local(identifier.IDENTIFIER().getText())
         if isinstance(identifier['type'],ArrayType):
-            index = self.getVal_of_expr(ctx.identifier().array_indexing().expr())
+            if ctx.identifier().array_indexing():
+                index = self.getVal_of_expr(ctx.identifier().array_indexing().expr())
+            else:
+                index = Constant(IntType(32),0)
             tempPtr = self.Builder.gep(identifier['ptr'],[Constant(IntType(32),0),index], inbounds=True)
+            if isinstance(value,GEPInstr):
+                value = self.Builder.load(value)
             return self.Builder.store(value, tempPtr)
         return self.Builder.store(value, identifier['ptr'])
 
@@ -195,9 +200,10 @@ class GeneratorVisitor(SmallCVisitor):
     def visitCondition(self, ctx:SmallCParser.ConditionContext):
         if ctx.expr():
             disjunction = self.getVal_of_expr(ctx.disjunction())
+            cond = self.Builder.icmp_signed('!=', disjunction, Constant(disjunction.type, 0))
             expr = self.getVal_of_expr(ctx.expr())
             condition = self.getVal_of_expr(ctx.condition())
-            return self.Builder.select(disjunction,expr,condition)
+            return self.Builder.select(cond,expr,condition)
         else:
             return self.getVal_of_expr(ctx.disjunction())
 
@@ -384,13 +390,20 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
         if ctx.BOOLEAN():
-            return Constant(IntType(1), ctx.getText())
+            return Constant(IntType(1), bool(ctx.getText()))
         elif ctx.INTEGER():
             return Constant(IntType(32), int(ctx.getText()))
         elif ctx.REAL():
-            return Constant(FloatType, ctx.getText())
+            return Constant(FloatType, float(ctx.getText()))
         elif ctx.CHARCONST():
-            return Constant(IntType(8), ctx.getText())
+            if ctx.getText()[0] == '"':
+                tempStr = ctx.getText()[1:-1]
+                tempStr = tempStr.replace('\\n','\n')
+                tempStr += '\0'
+                ptr = self.Builder.alloca(typ=ArrayType(IntType(8),len(tempStr)), name="str_" + tempStr)
+                ptr.initializer = Constant(ArrayType(IntType(8),len(tempStr)),bytearray(tempStr,'utf-8'))
+                return self.Builder.gep(ptr,[Constant(IntType(32),0),Constant(IntType(32),0)], inbounds=True)
+            return Constant(IntType(8), ctx.getText()[1:-1])
         elif ctx.identifier():
             return ctx.identifier()
         elif ctx.functioncall():
