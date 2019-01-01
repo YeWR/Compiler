@@ -46,6 +46,7 @@ class GeneratorVisitor(SmallCVisitor):
         return self.Builder.icmp_signed('!=', value, zero)
 
     def getVal_of_expr(self, expr):
+        var_map = self.var_stack[-1]
         temp = self.visit(expr)
         if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp,LoadInstr) or isinstance(temp,Instruction):
             value = temp
