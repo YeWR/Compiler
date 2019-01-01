@@ -22,7 +22,8 @@ class GeneratorVisitor(SmallCVisitor):
         self.function = None
         self.NamedValues = dict()
         self.counter = 0
-        self.block_stack = []
+        self.loop_stack = []
+        self.cond_stack = []
         self.var_stack = []
         self.cur_decl_type = None
 
@@ -51,10 +52,14 @@ class GeneratorVisitor(SmallCVisitor):
         if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp,LoadInstr) or isinstance(temp,Instruction):
             value = temp
         else:
-            temp_ptr = var_map[temp.IDENTIFIER().getText()]['ptr']
-            if temp.array_indexing():
-                index = self.getVal_of_expr(temp.array_indexing().expr())
-                temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+            temp_ptr = self.getVal_local(temp.IDENTIFIER().getText())['ptr']
+            if isinstance(self.getVal_local(temp.IDENTIFIER().getText())['type'],ArrayType):
+                if temp.array_indexing():
+                    index = self.getVal_of_expr(temp.array_indexing().expr())
+                    temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+                else: #返回数组地址
+                    temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
+                    return temp_ptr
             value = self.Builder.load(temp_ptr)
         return value
 
@@ -112,10 +117,8 @@ class GeneratorVisitor(SmallCVisitor):
                 alloca = self.Builder.alloca(arg.type, name=arg.name)
                 self.Builder.store(arg, alloca)
                 varDict[arg.name] = alloca
-            self.block_stack.append(block)
             self.var_stack.append(varDict)
             self.visit(ctx.compound_stmt())
-            self.block_stack.pop()
             self.var_stack.pop()
             self.function = None
         return
@@ -150,7 +153,17 @@ class GeneratorVisitor(SmallCVisitor):
         if ctx.RETURN():
             value = self.getVal_of_expr(ctx.expr())
             return self.Builder.ret(value)
-        return self.visitChildren(ctx)
+        elif ctx.CONTINUE():
+            loop_blocks = self.loop_stack[-1]
+            self.Builder.branch(loop_blocks['continue'])
+            self.Builder.position_at_start(loop_blocks['buf'])
+            return None
+        elif ctx.BREAK():
+            loop_blocks = self.loop_stack[-1]
+            self.Builder.branch(loop_blocks['break'])
+            self.Builder.position_at_start(loop_blocks['buf'])
+        else:
+            return self.visitChildren(ctx)
 
     def visitCompound_stmt(self, ctx: SmallCParser.Compound_stmtContext):
         # builder = IRBuilder(self.block_stack[-1])
@@ -247,6 +260,9 @@ class GeneratorVisitor(SmallCVisitor):
         self.var_stack.append({})
         stmt_block = func.append_basic_block()
         self.var_stack.append({})
+        loop_block = func.append_basic_block()
+
+        self.loop_stack.append({'continue': cond_block, 'break': end_block, 'buf': loop_block})
 
         with self.Builder.goto_block(decl_block):
         # self.Builder.position_at_start(end_block)
@@ -275,6 +291,8 @@ class GeneratorVisitor(SmallCVisitor):
 
         self.Builder.position_at_start(end_block)
 
+        self.loop_stack.pop()
+
         self.var_stack.pop()
         self.var_stack.pop()
         self.var_stack.pop()
@@ -289,6 +307,9 @@ class GeneratorVisitor(SmallCVisitor):
         self.var_stack.append({})
         stmt_block = func.append_basic_block()
         self.var_stack.append({})
+        loop_block = func.append_basic_block()
+
+        self.loop_stack.append({'continue': cond_block, 'break': end_block, 'buf': loop_block})
 
         self.Builder.branch(cond_block)
 
@@ -302,6 +323,8 @@ class GeneratorVisitor(SmallCVisitor):
             self.Builder.branch(cond_block)
 
         self.Builder.position_at_start(end_block)
+
+        self.loop_stack.pop()
 
         self.var_stack.pop()
         self.var_stack.pop()
