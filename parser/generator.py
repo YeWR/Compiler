@@ -48,11 +48,11 @@ class GeneratorVisitor(SmallCVisitor):
     def getVal_of_expr(self, expr):
         var_map = self.var_stack[-1]
         temp = self.visit(expr)
-        if not isinstance(temp, Constant):
+        if isinstance(temp, Constant) or isinstance(temp, CallInstr):
+            value = temp
+        else:
             temp_ptr = var_map[temp.getText()]['ptr']
             value = self.Builder.load(temp_ptr)
-        else:
-            value = temp
         return value
 
     def getType(self, type):
@@ -118,12 +118,15 @@ class GeneratorVisitor(SmallCVisitor):
         return
 
     def visitFunctioncall(self, ctx: SmallCParser.FunctioncallContext):
+        var_map = self.var_stack[-1]
+
         args = []
         if ctx.param_list():
             for param in ctx.param_list().getChildren():
                 temp = self.visit(param)
                 args.append(temp)
-        return self.Builder.call(self.function_dict[ctx.identifier().getText()], args)
+        function = self.function_dict[ctx.identifier().getText()]
+        return self.Builder.call(function, args)
 
     # def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
     #     type = self.getType(ctx.type_specifier())
@@ -160,13 +163,13 @@ class GeneratorVisitor(SmallCVisitor):
         identifier = self.getVal_local(identifier.getText())
         return self.Builder.store(value, identifier['ptr'])
 
-    # def visitExpr(self, ctx: SmallCParser.ExprContext):
-    #     if ctx.condition():
-    #         return self.visit(ctx.condition())
-    #     elif ctx.assignment():
-    #         return self.visit(ctx.assignment())
-    #     elif ctx.functioncall():
-    #         return self.visit(ctx.functioncall())
+    def visitExpr(self, ctx: SmallCParser.ExprContext):
+        if ctx.condition():
+            return self.visit(ctx.condition())
+        elif ctx.assignment():
+            return self.visit(ctx.assignment())
+        elif ctx.functioncall():
+            return self.visit(ctx.functioncall())
     #
     # def visitCondition(self, ctx:SmallCParser.ConditionContext):
     #     if ctx.expr():
@@ -251,8 +254,6 @@ class GeneratorVisitor(SmallCVisitor):
         var_map[identifier.getText()] = {"id": identifier.getText(), "type": type, "value": value, "ptr": ptr}
         return ptr
 
-    def visitExpr(self, ctx: SmallCParser.ExprContext):
-        return self.visitChildren(ctx)
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
         if ctx.BOOLEAN():
@@ -266,7 +267,7 @@ class GeneratorVisitor(SmallCVisitor):
         elif ctx.identifier():
             return ctx.identifier()
         elif ctx.functioncall():
-            return self.visitChildren(ctx)
+            return self.visit(ctx.functioncall())
         elif ctx.expr():
             return ctx.expr()
         else:
