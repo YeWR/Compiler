@@ -67,6 +67,14 @@ class GeneratorVisitor(SmallCVisitor):
         else:
             self.error("type error in <getType>")
 
+    def getVal_local(self, id):
+        temp_maps = self.var_stack[::-1]
+        for map in temp_maps:
+            if map[id]:
+                return map[id]
+        self.error("value error in <getVal_local>")
+        return None
+
     def visitFunction_definition(self, ctx: SmallCParser.Function_definitionContext):
         retType = self.getType(ctx.type_specifier().getText())
         argsType = []
@@ -134,7 +142,7 @@ class GeneratorVisitor(SmallCVisitor):
     def visitStmt(self, ctx: SmallCParser.StmtContext):
         if ctx.RETURN():
             value = self.getVal_of_expr(ctx.expr())
-            self.Builder.ret(Constant(self.getType('int'), value))
+            return self.Builder.ret(value)
         return self.visitChildren(ctx)
 
     def visitCompound_stmt(self, ctx: SmallCParser.Compound_stmtContext):
@@ -147,11 +155,10 @@ class GeneratorVisitor(SmallCVisitor):
         return result
 
     def visitAssignment(self, ctx: SmallCParser.AssignmentContext):
-        return self.visitChildren(ctx)
-        # block = self.Builder.block
-        # identifier = ctx.identifier()
-        # expr = self.visit(ctx.expr())
-        # result = self.Builder().store(value=expr, ptr=, align=4)
+        value = self.getVal_of_expr(ctx.expr())
+        identifier = ctx.identifier()
+        identifier = self.getVal_local(identifier.getText())
+        return self.Builder.store(value, identifier['ptr'])
 
     # def visitExpr(self, ctx: SmallCParser.ExprContext):
     #     if ctx.condition():
