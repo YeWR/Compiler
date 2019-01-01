@@ -103,7 +103,7 @@ class GeneratorVisitor(SmallCVisitor):
             var_arg = False
             for t in args.getChildren():
                 if t.getText() != ',':
-                    if t.getText == '...':
+                    if t.getText() == '...':
                         var_arg = True
                         break
                     argsType.append(self.getType(t.type_specifier().getText()))
