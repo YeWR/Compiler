@@ -15,22 +15,22 @@ void KMP_matching()
 	flag = 0;
 	k = 0;
 	/* Compute prefix*/
-	for (q = 2; q <= m; q++)
+	for (q = 2; q <= m; q=q+1)
 	{
 		while (k > 0 && pattern[k] != pattern[q - 1])
 			k = prefix[k - 1];
 		if (pattern[k] == pattern[q - 1])
-			k++;
+			k=k+1;
 		prefix[q - 1] = k;
 	}
 	/* Match!*/
 	q = 0;
-	for (i = 0; i < n; i++)
+	for (i = 0; i < n; i=i+1)
 	{
 		while (q > 0 && pattern[q] != src[i])
 			q = prefix[q - 1];
 		if (pattern[q] == src[i])
-			q++;
+			q=q+1;
 		if (q == m) 
 		{
 			if (flag == 0) {
@@ -55,18 +55,18 @@ int main() {
 	m = 0;
 	int i;
 	i = 0;
-	for (i = 0; i < 1000; i++) {
+	for (i = 0; i < 1000; i=i+1) {
 		src[i] = '\0';
 	}
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 100; i=i+1) {
 		pattern[i] = '\0';
 	}
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 100; i=i+1) {
 		prefix[i] = 0;
 	}
 	gets(src);
 	gets(pattern);
-	for (i = 0; i < 1000; i++) {
+	for (i = 0; i < 1000; i=i+1) {
 		if (src[i] == '\0') {
 			n = i;
 			break;
@@ -76,7 +76,7 @@ int main() {
 			break;
 		}
 	}
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 100; i=i+1) {
 		if (pattern[i] == '\0') {
 			m = i;
 			break;
