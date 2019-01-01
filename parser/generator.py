@@ -106,8 +106,11 @@ class GeneratorVisitor(SmallCVisitor):
                     if t.getText() == '...':
                         var_arg = True
                         break
-                    argsType.append(self.getType(t.type_specifier().getText()))
-                    argsName.append(t.identifier().getText())
+                    t_type = self.getType(t.type_specifier().getText())
+                    if t.identifier().ASTERIKS():
+                        t_type = t_type.as_pointer()
+                    argsType.append(t_type)
+                    argsName.append(t.identifier().IDENTIFIER().getText())
             funcType = FunctionType(retType, tuple(argsType),var_arg=var_arg)
         # no args
         else:
@@ -455,7 +458,28 @@ class GeneratorVisitor(SmallCVisitor):
             return self.getVal_local(str(ctx.IDENTIFIER()))['ptr']
         if(ctx.ASTERIKS()):
             return self.getVal_local(str(ctx.IDENTIFIER()))['ptr']
-        return self.visitChildren(ctx)
+        temp = self.getVal_local(ctx.IDENTIFIER().getText())
+        temp_ptr = temp['ptr']
+        # if isinstance(temp_val['type'],ArrayType):
+        #     if temp.array_indexing():
+        #         index = self.getVal_of_expr(temp.array_indexing().expr())
+        #         temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+        #     elif temp.AMPERSAND():
+        #         Constant(PointerType(IntType(8)), temp_ptr.getText())
+        #     elif temp.ASTERIKS():
+        #         pass
+        #     else: #返回数组地址
+        #         temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
+        #         return temp_ptr
+        if isinstance(temp['type'],ArrayType):
+            if ctx.array_indexing():
+                index = self.getVal_of_expr(temp.array_indexing().expr())
+                temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+                return temp_ptr
+            else:
+                temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
+                return temp_ptr
+        return temp_ptr
 
     def visitArray_indexing(self, ctx:SmallCParser.Array_indexingContext):
         return self.visit(ctx.expr())
