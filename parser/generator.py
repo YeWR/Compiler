@@ -90,12 +90,15 @@ class GeneratorVisitor(SmallCVisitor):
         # args
         if ctx.param_decl_list():
             args = ctx.param_decl_list()
-
+            var_arg = False
             for t in args.getChildren():
                 if t.getText() != ',':
+                    if t.getText == '...':
+                        var_arg = True
+                        break
                     argsType.append(self.getType(t.type_specifier().getText()))
                     argsName.append(t.identifier().getText())
-            funcType = FunctionType(retType, tuple(argsType))
+            funcType = FunctionType(retType, tuple(argsType),var_arg=var_arg)
         # no args
         else:
             funcType = FunctionType(retType, ())
