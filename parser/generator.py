@@ -48,7 +48,7 @@ class GeneratorVisitor(SmallCVisitor):
     def getVal_of_expr(self, expr):
         var_map = self.var_stack[-1]
         temp = self.visit(expr)
-        if isinstance(temp, Constant) or isinstance(temp, CallInstr):
+        if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp,LoadInstr) or isinstance(temp,Instruction):
             value = temp
         else:
             temp_ptr = var_map[temp.getText()]['ptr']
