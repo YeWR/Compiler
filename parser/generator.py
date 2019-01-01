@@ -50,7 +50,7 @@ class GeneratorVisitor(SmallCVisitor):
     def getVal_of_expr(self, expr):
         temp = self.visit(expr)
         if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp, LoadInstr) or isinstance(temp,
-                                                                                                                  Instruction):
+                                                                                                                  Instruction) or isinstance(temp, GlobalVariable):
             value = temp
         else:
             temp_val = self.getVal_local(temp.IDENTIFIER().getText())
@@ -166,7 +166,7 @@ class GeneratorVisitor(SmallCVisitor):
                     if isinstance(arg_type.type, PointerType):
                         ptr_flag = True
                 else:
-                    temp_type = var_map[temp.name]['type']
+                    temp_type = temp.type
                     if isinstance(temp_type, PointerType):
                         ptr_flag = True
                 if not ptr_flag:
@@ -230,7 +230,7 @@ class GeneratorVisitor(SmallCVisitor):
             else:
                 index = Constant(IntType(32), 0)
             tempPtr = self.Builder.gep(identifier['ptr'], [Constant(IntType(32), 0), index], inbounds=True)
-            if isinstance(value, GEPInstr):
+            if isinstance(value.type, PointerType):
                 value = self.Builder.load(value)
             return self.Builder.store(value, tempPtr)
         if isinstance(value.type, PointerType):

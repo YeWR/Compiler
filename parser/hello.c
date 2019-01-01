@@ -34,10 +34,12 @@ void KMP_matching()
 		if (q == m)
 		{
 			if (flag == 0) {
-				printf("%d", i - m + 1);
+			    int temp1 = i - m +1;
+				printf("%d", temp1);
 			}
 			else {
-				printf(",%d", i - m +1);
+			    int temp2 = i - m +1;
+				printf(",%d", temp2);
 			}
 			flag = 1;
 			/* next match */
