@@ -153,6 +153,11 @@ class GeneratorVisitor(SmallCVisitor):
             loop_blocks = self.loop_stack[-1]
             self.Builder.branch(loop_blocks['continue'])
             self.Builder.position_at_start(loop_blocks['buf'])
+            return None
+        elif ctx.BREAK():
+            loop_blocks = self.loop_stack[-1]
+            self.Builder.branch(loop_blocks['break'])
+            self.Builder.position_at_start(loop_blocks['buf'])
         else:
             return self.visitChildren(ctx)
 

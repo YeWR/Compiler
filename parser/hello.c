@@ -5,7 +5,7 @@ int main()
         int a = 1;
         if (a)
         {
-            continue;
+            break;
         }
     }
     return 0;
