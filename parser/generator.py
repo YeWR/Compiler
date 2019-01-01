@@ -418,6 +418,7 @@ class GeneratorVisitor(SmallCVisitor):
         elif ctx.CHARCONST():
             tempStr = ctx.getText()[1:-1]
             tempStr = tempStr.replace('\\n', '\n')
+            tempStr = tempStr.replace('\\0', '\0')
             if ctx.getText()[0] == '"':
                 tempStr += '\0'
                 temp = GlobalVariable(self.Module,ArrayType(IntType(8),len(tempStr)), name="str_" + tempStr)
