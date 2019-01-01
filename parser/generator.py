@@ -480,7 +480,8 @@ class GeneratorVisitor(SmallCVisitor):
             else:
                 temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
                 return temp_ptr
-        return temp_ptr
+        temp_val = temp['value']
+        return temp_val
 
     def visitArray_indexing(self, ctx:SmallCParser.Array_indexingContext):
         return self.visit(ctx.expr())
