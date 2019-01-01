@@ -54,17 +54,20 @@ class GeneratorVisitor(SmallCVisitor):
         else:
             temp_val = self.getVal_local(temp.IDENTIFIER().getText())
             temp_ptr = temp_val['ptr']
-            if isinstance(temp_val['type'],ArrayType):
-                if temp.array_indexing():
-                    index = self.getVal_of_expr(temp.array_indexing().expr())
-                    temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
-                elif temp.AMPERSAND():
-                    Constant(PointerType(IntType(8)), temp_ptr.getText())
-                elif temp.ASTERIKS():
-                    pass
-                else: #返回数组地址
-                    temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
-                    return temp_ptr
+            if temp.array_indexing():
+                index = self.getVal_of_expr(temp.array_indexing().expr())
+                temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+            # if isinstance(temp_val['type'],ArrayType):
+            #     if temp.array_indexing():
+            #         index = self.getVal_of_expr(temp.array_indexing().expr())
+            #         temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+            #     elif temp.AMPERSAND():
+            #         Constant(PointerType(IntType(8)), temp_ptr.getText())
+            #     elif temp.ASTERIKS():
+            #         pass
+            #     else: #返回数组地址
+            #         temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
+            #         return temp_ptr
             value = self.Builder.load(temp_ptr)
         return value
 

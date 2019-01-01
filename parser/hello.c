@@ -1,12 +1,8 @@
-void gg()
-{
-    int a = 1;
-}
-
+int printf(char* a, char* b);
 int main()
 {
-    int b[3];
-    int* e;
-    e = &b;
+    char src[1000];
+    src[0] = '\0';
+    printf("%s",src);
     return 0;
 }
