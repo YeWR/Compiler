@@ -52,11 +52,16 @@ class GeneratorVisitor(SmallCVisitor):
         if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp,LoadInstr) or isinstance(temp,Instruction):
             value = temp
         else:
-            temp_ptr = self.getVal_local(temp.IDENTIFIER().getText())['ptr']
-            if isinstance(self.getVal_local(temp.IDENTIFIER().getText())['type'],ArrayType):
+            temp_val = self.getVal_local(temp.IDENTIFIER().getText())
+            temp_ptr = temp_val['ptr']
+            if isinstance(temp_val['type'],ArrayType):
                 if temp.array_indexing():
                     index = self.getVal_of_expr(temp.array_indexing().expr())
                     temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+                elif temp.AMPERSAND():
+                    Constant(PointerType(IntType(8)), temp_ptr.getText())
+                elif temp.ASTERIKS():
+                    pass
                 else: #返回数组地址
                     temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
                     return temp_ptr
@@ -72,6 +77,8 @@ class GeneratorVisitor(SmallCVisitor):
             return FloatType()
         elif type == 'bool':
             return IntType(1)
+        elif type == 'void':
+            return VoidType()
         else:
             self.error("type error in <getType>")
 
@@ -122,6 +129,8 @@ class GeneratorVisitor(SmallCVisitor):
                 varDict[arg.name] = alloca
             self.var_stack.append(varDict)
             self.visit(ctx.compound_stmt())
+            if isinstance(retType, VoidType):
+                self.Builder.ret_void()
             self.var_stack.pop()
             self.function = None
         return
@@ -408,7 +417,7 @@ class GeneratorVisitor(SmallCVisitor):
                 return self.Builder.gep(ptr,[Constant(IntType(32),0),Constant(IntType(32),0)], inbounds=True)
             return Constant(IntType(8), ctx.getText()[1:-1])
         elif ctx.identifier():
-            return ctx.identifier()
+            return self.visit(ctx.identifier())
         elif ctx.functioncall():
             return self.visit(ctx.functioncall())
         elif ctx.expr():
@@ -433,3 +442,17 @@ class GeneratorVisitor(SmallCVisitor):
         if(ctx.MINUS()):
             return self.Builder.sub(self.getVal_of_expr(ctx.equation()), self.getVal_of_expr(ctx.term()))
         return self.visitChildren(ctx)
+
+    def visitIdentifier(self, ctx:SmallCParser.IdentifierContext):
+        if(ctx.AMPERSAND() and ctx.array_indexing()):
+            return self.Builder.gep(self.getVal_of_expr(ctx.IDENTIFIER()), self.getVal_of_expr(ctx.array_indexing()))
+        if(ctx.ASTERIKS() and ctx.array_indexing()):
+            return self.Builder.load(self.Builder.gep(self.getVal_of_expr(ctx.IDENTIFIER()), self.getVal_of_expr(ctx.array_indexing())))
+        if(ctx.AMPERSAND()):
+            return self.getVal_local(str(ctx.IDENTIFIER()))['ptr']
+        if(ctx.ASTERIKS()):
+            return self.getVal_local(str(ctx.IDENTIFIER()))['ptr']
+        return self.visitChildren(ctx)
+
+    def visitArray_indexing(self, ctx:SmallCParser.Array_indexingContext):
+        return self.visit(ctx.expr())
