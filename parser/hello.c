@@ -9,11 +9,9 @@ char * gets (char * str);
 /* KMP algorithm */
 void KMP_matching()
 {
-	int flag;
-	int k;
-	int q, i;
-	flag = 0;
-	k = 0;
+	int flag = 0;
+	int k = 0;
+	int q = 0;
 	/* Compute prefix*/
 	for (q = 2; q <= m; q=q+1)
 	{
@@ -25,20 +23,21 @@ void KMP_matching()
 	}
 	/* Match!*/
 	q = 0;
-	for (i = 0; i < n; i=i+1)
+	for (int j = 0; j < n; j=j+1)
 	{
-		while (q > 0 && pattern[q] != src[i])
+	    printf("%d\n", j);
+		while (q > 0 && pattern[q] != src[j])
 			q = prefix[q - 1];
-		if (pattern[q] == src[i])
+		if (pattern[q] == src[j])
 			q=q+1;
 		if (q == m)
 		{
 			if (flag == 0) {
-			    int temp1 = i - m +1;
+			    int temp1 = j - m +1;
 				printf("%d", temp1);
 			}
 			else {
-			    int temp2 = i - m +1;
+			    int temp2 = j - m +1;
 				printf(",%d", temp2);
 			}
 			flag = 1;
@@ -68,6 +67,8 @@ int main() {
 	}
 	gets(src);
 	gets(pattern);
+	printf("%s\n", src);
+	printf("%s\n", pattern);
 	for (i = 0; i < 1000; i=i+1) {
 		if (src[i] == '\0') {
 			n = i;

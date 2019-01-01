@@ -165,8 +165,8 @@ class GeneratorVisitor(SmallCVisitor):
                 if arg_type:
                     if isinstance(arg_type.type, PointerType):
                         ptr_flag = True
-                else:
-                    temp_type = temp.type
+                elif self.getVal_local(temp.name):
+                    temp_type = self.getVal_local(temp.name)['type']
                     if isinstance(temp_type, PointerType):
                         ptr_flag = True
                 if not ptr_flag:
@@ -506,7 +506,8 @@ class GeneratorVisitor(SmallCVisitor):
             tempStr = tempStr.replace('\\0', '\0')
             if ctx.getText()[0] == '"':
                 tempStr += '\0'
-                temp = GlobalVariable(self.Module, ArrayType(IntType(8), len(tempStr)), name="str_" + tempStr)
+                temp = GlobalVariable(self.Module, ArrayType(IntType(8), len(tempStr)), name="str_" + tempStr + str(self.counter))
+                self.counter += 1
                 temp.initializer = Constant(ArrayType(IntType(8), len(tempStr)), bytearray(tempStr, encoding='utf-8'))
                 temp.global_constant = True
                 return self.Builder.gep(temp, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
