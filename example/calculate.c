@@ -44,17 +44,17 @@ int cal() {
 	res = 0;
 	int num;
 	num = 0;
-	for (i = 0; i < len; i++) {
+	for (i = 0; i < len; i=i+1) {
 		if (isOperate(src[i]) || isPart(src[i])) {
 			if (isOperate(src[i])) {
 				if (operate_top == -1) {
 					operate[operate_top + 1] = src[i];
-					operate_top++;
+					operate_top=operate_top+1;
 				}
 				else {
 					if (isPrior(src[i], operate[operate_top]) == 1) {
 						operate[operate_top + 1] = src[i];
-						operate_top++;
+						operate_top=operate_top+1;
 					}
 					else {
 						if (operate[operate_top] == '+') {
@@ -71,7 +71,7 @@ int cal() {
 						}
 						if (operate[operate_top] == '(') {
 							operate[operate_top + 1] = src[i];
-							operate_top++;
+							operate_top=operate_top+1;
 							continue;
 						}
 						if (operate[operate_top] != '(') {
@@ -84,7 +84,7 @@ int cal() {
 			if (isPart(src[i])) {
 				if (src[i] == '(') {
 					operate[operate_top + 1] = src[i];
-					operate_top++;
+					operate_top=operate_top+1;
 				}
 				else {
 					while (operate[operate_top] != '(') {
@@ -112,7 +112,7 @@ int cal() {
 			num += src[i] - '0';
 			if (i == len - 1 || (i != len-1 && (isOperate(src[i+1]) || isPart(src[i+1])))) {
 				number[number_top + 1] = num;
-				number_top ++;
+				number_top = number_top+1;
 				num = 0;
 			} 
 		}
@@ -143,13 +143,13 @@ int main() {
 	number_top = -1;
 	int i;
 	i = 0;
-	for (i = 0; i < 1000; i++) {
+	for (i = 0; i < 1000; i=i+1) {
 		src[i] = '\0';
 		operate[i] = '\0';
 		number[i] = 0;
 	}
 	gets(src);
-	for (i = 0; i < 1000; i++) {
+	for (i = 0; i < 1000; i=i+1) {
 		if (src[i] == '\0') {
 			len = i;
 			break;
