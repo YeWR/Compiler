@@ -50,7 +50,7 @@ void KMP_matching()
 }
 
 int main() {
-	printf("请输入分两行两个字符串，第一行字符串为待匹配主串，第二行为模式串\n");
+	printf("please input two strings, first is src, second is pattern\n");
 	n = 0;
 	m = 0;
 	int i;
@@ -87,7 +87,7 @@ int main() {
 		}
 	}
 	if (m == 0 || n == 0) {
-		printf("输入不可以为空");
+		printf("empty string");
 		return 0;
 	}
 	KMP_matching();
