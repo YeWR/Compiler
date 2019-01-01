@@ -1,3 +1,5 @@
+int printf(char* format, ...);
+char * gets (char * str);
 char src[1000];
 char pattern[100];
 int prefix[100];
@@ -62,8 +64,8 @@ int main() {
 	for (i = 0; i < 100; i++) {
 		prefix[i] = 0;
 	}
-	scanf("%s", &src);
-	scanf("%s", &pattern);
+	gets(src);
+	gets(pattern);
 	for (i = 0; i < 1000; i++) {
 		if (src[i] == '\0') {
 			n = i;

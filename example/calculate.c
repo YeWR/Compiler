@@ -1,4 +1,6 @@
-﻿char src[1000];
+﻿int printf(char* format, ...);
+char * gets (char * str);
+char src[1000];
 int len;
 char operate[1000];
 int operate_top;
@@ -146,7 +148,7 @@ int main() {
 		operate[i] = '\0';
 		number[i] = 0;
 	}
-	scanf("%s", &src);
+	gets(src);
 	for (i = 0; i < 1000; i++) {
 		if (src[i] == '\0') {
 			len = i;
