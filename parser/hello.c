@@ -1,11 +1,16 @@
+int c()
+{
+    int a = 1;
+    return 0;
+}
+
 int main()
 {
-    int a;
-    a = 1;
-    if (a)
+    int b = 10;
+    while(b)
     {
-        int b = 2;
-        b = 3;
+        b = b - 1;
+        int c = 1;
     }
-    return a;
+    return 0;
 }
