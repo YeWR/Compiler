@@ -50,7 +50,8 @@ class GeneratorVisitor(SmallCVisitor):
     def getVal_of_expr(self, expr):
         var_map = self.var_stack[-1]
         temp = self.visit(expr)
-        if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp,LoadInstr) or isinstance(temp,Instruction):
+        if isinstance(temp, Constant) or isinstance(temp, CallInstr) or isinstance(temp, LoadInstr) or isinstance(temp,
+                                                                                                                  Instruction):
             value = temp
         else:
             temp_val = self.getVal_local(temp.IDENTIFIER().getText())
@@ -114,7 +115,7 @@ class GeneratorVisitor(SmallCVisitor):
                         t_type = t_type.as_pointer()
                     argsType.append(t_type)
                     argsName.append(t.identifier().IDENTIFIER().getText())
-            funcType = FunctionType(retType, tuple(argsType),var_arg=var_arg)
+            funcType = FunctionType(retType, tuple(argsType), var_arg=var_arg)
         # no args
         else:
             funcType = FunctionType(retType, ())
@@ -135,7 +136,7 @@ class GeneratorVisitor(SmallCVisitor):
                 arg.name = argsName[i]
                 alloca = self.Builder.alloca(arg.type, name=arg.name)
                 self.Builder.store(arg, alloca)
-                varDict[arg.name] = alloca
+                varDict[arg.name] = {"id": arg.name, "type": arg.type, "value": None, "ptr": alloca}
             self.var_stack.append(varDict)
             self.visit(ctx.compound_stmt())
             if isinstance(retType, VoidType):
@@ -146,14 +147,35 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitFunctioncall(self, ctx: SmallCParser.FunctioncallContext):
         var_map = self.var_stack[-1]
+        function = self.function_dict[ctx.identifier().getText()]
+        arg_types = function.args
+        index = 0
+
         args = []
         if ctx.param_list():
             for param in ctx.param_list().getChildren():
-                if(param.getText() == ','):
+                if (param.getText() == ','):
                     continue
+
                 temp = self.getVal_of_expr(param)
+
+                arg_type = None
+                if index < len(arg_types):
+                    arg_type = arg_types[index]
+                ptr_flag = False
+                if arg_type:
+                    if isinstance(arg_type.type, PointerType):
+                        ptr_flag = True
+                else:
+                    temp_type = var_map[temp.name]['type']
+                    if isinstance(temp_type, PointerType):
+                        ptr_flag = True
+                if not ptr_flag:
+                    temp = self.Builder.load(temp)
                 args.append(temp)
-        function = self.function_dict[ctx.identifier().getText()]
+
+                index += 1
+
         return self.Builder.call(function, args)
 
     # def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
@@ -201,13 +223,13 @@ class GeneratorVisitor(SmallCVisitor):
         value = self.getVal_of_expr(ctx.expr())
         identifier = ctx.identifier()
         identifier = self.getVal_local(identifier.IDENTIFIER().getText())
-        if isinstance(identifier['type'],ArrayType):
+        if isinstance(identifier['type'], ArrayType):
             if ctx.identifier().array_indexing():
                 index = self.getVal_of_expr(ctx.identifier().array_indexing().expr())
             else:
-                index = Constant(IntType(32),0)
-            tempPtr = self.Builder.gep(identifier['ptr'],[Constant(IntType(32),0),index], inbounds=True)
-            if isinstance(value,GEPInstr):
+                index = Constant(IntType(32), 0)
+            tempPtr = self.Builder.gep(identifier['ptr'], [Constant(IntType(32), 0), index], inbounds=True)
+            if isinstance(value, GEPInstr):
                 value = self.Builder.load(value)
             return self.Builder.store(value, tempPtr)
         return self.Builder.store(value, identifier['ptr'])
@@ -220,41 +242,41 @@ class GeneratorVisitor(SmallCVisitor):
         elif ctx.functioncall():
             return self.visit(ctx.functioncall())
 
-    def visitCondition(self, ctx:SmallCParser.ConditionContext):
+    def visitCondition(self, ctx: SmallCParser.ConditionContext):
         if ctx.expr():
             disjunction = self.getVal_of_expr(ctx.disjunction())
             cond = self.Builder.icmp_signed('!=', disjunction, Constant(disjunction.type, 0))
             expr = self.getVal_of_expr(ctx.expr())
             condition = self.getVal_of_expr(ctx.condition())
-            return self.Builder.select(cond,expr,condition)
+            return self.Builder.select(cond, expr, condition)
         else:
             return self.getVal_of_expr(ctx.disjunction())
 
-    def visitDisjunction(self, ctx:SmallCParser.DisjunctionContext):
+    def visitDisjunction(self, ctx: SmallCParser.DisjunctionContext):
         if ctx.disjunction():
             disjunction = self.getVal_of_expr(ctx.disjunction())
             conjunction = self.getVal_of_expr(ctx.conjunction())
-            left = self.Builder.icmp_signed('!=',disjunction,Constant(disjunction.type,0))
+            left = self.Builder.icmp_signed('!=', disjunction, Constant(disjunction.type, 0))
             right = self.Builder.icmp_signed('!=', conjunction, Constant(conjunction.type, 0))
-            return self.Builder.or_(left,right)
+            return self.Builder.or_(left, right)
         else:
             return self.getVal_of_expr(ctx.conjunction())
 
-    def visitConjunction(self, ctx:SmallCParser.ConjunctionContext):
+    def visitConjunction(self, ctx: SmallCParser.ConjunctionContext):
         if ctx.conjunction():
             conjunction = self.getVal_of_expr(ctx.conjunction())
             comparison = self.getVal_of_expr(ctx.comparison())
             left = self.Builder.icmp_signed('!=', conjunction, Constant(conjunction.type, 0))
             right = self.Builder.icmp_signed('!=', comparison, Constant(comparison.type, 0))
-            return self.Builder.and_(left,right)
+            return self.Builder.and_(left, right)
         else:
             return self.getVal_of_expr(ctx.comparison())
 
-    def visitComparison(self, ctx:SmallCParser.ComparisonContext):
+    def visitComparison(self, ctx: SmallCParser.ComparisonContext):
         if ctx.EQUALITY():
             relation1 = self.getVal_of_expr(ctx.relation(0))
             relation2 = self.getVal_of_expr(ctx.relation(1))
-            return self.Builder.icmp_signed('==',relation1,relation2)
+            return self.Builder.icmp_signed('==', relation1, relation2)
         elif ctx.NEQUALITY():
             relation1 = self.getVal_of_expr(ctx.relation(0))
             relation2 = self.getVal_of_expr(ctx.relation(1))
@@ -262,18 +284,18 @@ class GeneratorVisitor(SmallCVisitor):
         else:
             return self.getVal_of_expr(ctx.relation(0))
 
-    def visitRelation(self, ctx:SmallCParser.RelationContext):
+    def visitRelation(self, ctx: SmallCParser.RelationContext):
         if len(ctx.equation()) > 1:
             equation1 = self.getVal_of_expr(ctx.equation(0))
             equation2 = self.getVal_of_expr(ctx.equation(1))
             if ctx.LEFTANGLE():
-                value = self.Builder.icmp_signed('<',equation1,equation2)
+                value = self.Builder.icmp_signed('<', equation1, equation2)
             elif ctx.RIGHTANGLE():
-                value = self.Builder.icmp_signed('>',equation1,equation2)
+                value = self.Builder.icmp_signed('>', equation1, equation2)
             elif ctx.LEFTANGLEEQUAL():
-                value = self.Builder.icmp_signed('<=',equation1,equation2)
+                value = self.Builder.icmp_signed('<=', equation1, equation2)
             elif ctx.RIGHTANGLEEQUAL():
-                value = self.Builder.icmp_signed('>=',equation1,equation2)
+                value = self.Builder.icmp_signed('>=', equation1, equation2)
             return value
         else:
             return self.getVal_of_expr(ctx.equation(0))
@@ -296,7 +318,7 @@ class GeneratorVisitor(SmallCVisitor):
         self.loop_stack.append({'continue': cond_block, 'break': end_block, 'buf': loop_block})
 
         with self.Builder.goto_block(decl_block):
-        # self.Builder.position_at_start(end_block)
+            # self.Builder.position_at_start(end_block)
             if ctx.var_decl():
                 self.visit(ctx.var_decl())
             elif ctx.var_decl_list():
@@ -411,7 +433,7 @@ class GeneratorVisitor(SmallCVisitor):
         type = self.cur_decl_type
         if identifier.array_indexing():
             length = self.getVal_of_expr(identifier.array_indexing().expr())
-            type = ArrayType(type,length.constant)
+            type = ArrayType(type, length.constant)
             ptr = self.Builder.alloca(typ=type, name=identifier.IDENTIFIER().getText())
         else:
             ptr = self.Builder.alloca(typ=type, name=identifier.IDENTIFIER().getText())
@@ -422,7 +444,8 @@ class GeneratorVisitor(SmallCVisitor):
         else:
             value = Constant(type, None)
         self.Builder.store(value, ptr)
-        var_map[identifier.IDENTIFIER().getText()] = {"id": identifier.IDENTIFIER().getText(), "type": type, "value": value, "ptr": ptr}
+        var_map[identifier.IDENTIFIER().getText()] = {"id": identifier.IDENTIFIER().getText(), "type": type,
+                                                      "value": value, "ptr": ptr}
         return ptr
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
@@ -438,10 +461,10 @@ class GeneratorVisitor(SmallCVisitor):
             tempStr = tempStr.replace('\\0', '\0')
             if ctx.getText()[0] == '"':
                 tempStr += '\0'
-                temp = GlobalVariable(self.Module,ArrayType(IntType(8),len(tempStr)), name="str_" + tempStr)
-                temp.initializer = Constant(ArrayType(IntType(8),len(tempStr)), bytearray(tempStr,encoding='utf-8'))
+                temp = GlobalVariable(self.Module, ArrayType(IntType(8), len(tempStr)), name="str_" + tempStr)
+                temp.initializer = Constant(ArrayType(IntType(8), len(tempStr)), bytearray(tempStr, encoding='utf-8'))
                 temp.global_constant = True
-                return self.Builder.gep(temp,[Constant(IntType(32),0),Constant(IntType(32),0)], inbounds=True)
+                return self.Builder.gep(temp, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
             return Constant(IntType(8), ord(tempStr[0]))
         elif ctx.identifier():
             return self.visit(ctx.identifier())
@@ -452,32 +475,36 @@ class GeneratorVisitor(SmallCVisitor):
         else:
             return self.error("type error in <visitPrimary>")
 
-
     def visitFactor(self, ctx: SmallCParser.FactorContext):
         return self.visitChildren(ctx)
 
-    def visitTerm(self, ctx:SmallCParser.TermContext):
-        if(ctx.ASTERIKS()):
+    def visitTerm(self, ctx: SmallCParser.TermContext):
+        if (ctx.ASTERIKS()):
             return self.Builder.mul(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
-        if(ctx.SLASH()):
+        if (ctx.SLASH()):
             return self.Builder.fdiv(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
         return self.visitChildren(ctx)
 
-    def visitEquation(self, ctx:SmallCParser.EquationContext):
-        if(ctx.PLUS()):
-            return self.Builder.add(self.getVal_of_expr(ctx.equation()),self.getVal_of_expr(ctx.term()))
-        if(ctx.MINUS()):
-            return self.Builder.sub(self.getVal_of_expr(ctx.equation()), self.getVal_of_expr(ctx.term()))
+    def visitEquation(self, ctx: SmallCParser.EquationContext):
+        if (ctx.PLUS()):
+            equation = self.getVal_of_expr(ctx.equation())
+            equation = self.Builder.load(equation)
+            return self.Builder.add(equation, self.getVal_of_expr(ctx.term()))
+        if (ctx.MINUS()):
+            equation = self.getVal_of_expr(ctx.equation())
+            equation = self.Builder.load(equation)
+            return self.Builder.sub(equation, self.getVal_of_expr(ctx.term()))
         return self.visitChildren(ctx)
 
-    def visitIdentifier(self, ctx:SmallCParser.IdentifierContext):
-        if(ctx.AMPERSAND() and ctx.array_indexing()):
+    def visitIdentifier(self, ctx: SmallCParser.IdentifierContext):
+        if (ctx.AMPERSAND() and ctx.array_indexing()):
             return self.Builder.gep(self.getVal_of_expr(ctx.IDENTIFIER()), self.getVal_of_expr(ctx.array_indexing()))
-        if(ctx.ASTERIKS() and ctx.array_indexing()):
-            return self.Builder.load(self.Builder.gep(self.getVal_of_expr(ctx.IDENTIFIER()), self.getVal_of_expr(ctx.array_indexing())))
-        if(ctx.AMPERSAND()):
+        if (ctx.ASTERIKS() and ctx.array_indexing()):
+            return self.Builder.load(
+                self.Builder.gep(self.getVal_of_expr(ctx.IDENTIFIER()), self.getVal_of_expr(ctx.array_indexing())))
+        if (ctx.AMPERSAND()):
             return self.getVal_local(str(ctx.IDENTIFIER()))['ptr']
-        if(ctx.ASTERIKS()):
+        if (ctx.ASTERIKS()):
             return self.getVal_local(str(ctx.IDENTIFIER()))['ptr']
         temp = self.getVal_local(ctx.IDENTIFIER().getText())
         temp_ptr = temp['ptr']
@@ -492,16 +519,17 @@ class GeneratorVisitor(SmallCVisitor):
         #     else: #返回数组地址
         #         temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
         #         return temp_ptr
-        if isinstance(temp['type'],ArrayType):
+        if isinstance(temp['type'], ArrayType):
             if ctx.array_indexing():
                 index = self.getVal_of_expr(temp.array_indexing().expr())
                 temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
                 return temp_ptr
             else:
-                temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)], inbounds=True)
+                temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)],
+                                            inbounds=True)
                 return temp_ptr
-        temp_val = temp['value']
+        temp_val = temp['ptr']
         return temp_val
 
-    def visitArray_indexing(self, ctx:SmallCParser.Array_indexingContext):
+    def visitArray_indexing(self, ctx: SmallCParser.Array_indexingContext):
         return self.visit(ctx.expr())
