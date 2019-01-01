@@ -361,6 +361,24 @@ class GeneratorVisitor(SmallCVisitor):
         elif ctx.functioncall():
             return self.visit(ctx.functioncall())
         elif ctx.expr():
-            return ctx.expr()
+            return self.visit(ctx.expr()) # to do
         else:
             return self.error("type error in <visitPrimary>")
+
+
+    def visitFactor(self, ctx: SmallCParser.FactorContext):
+        return self.visitChildren(ctx)
+
+    def visitTerm(self, ctx:SmallCParser.TermContext):
+        if(ctx.ASTERIKS()):
+            return self.Builder.mul(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
+        if(ctx.SLASH()):
+            return self.Builder.fdiv(self.getVal_of_expr(ctx.term()), self.getVal_of_expr(ctx.factor()))
+        return self.visitChildren(ctx)
+
+    def visitEquation(self, ctx:SmallCParser.EquationContext):
+        if(ctx.PLUS()):
+            return self.Builder.add(self.getVal_of_expr(ctx.equation()),self.getVal_of_expr(ctx.term()))
+        if(ctx.MINUS()):
+            return self.Builder.sub(self.getVal_of_expr(ctx.equation()), self.getVal_of_expr(ctx.term()))
+        return self.visitChildren(ctx)
