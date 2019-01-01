@@ -226,12 +226,16 @@ class GeneratorVisitor(SmallCVisitor):
         if isinstance(identifier['type'], ArrayType):
             if ctx.identifier().array_indexing():
                 index = self.getVal_of_expr(ctx.identifier().array_indexing().expr())
+                if isinstance(index.type, PointerType):
+                    index = self.Builder.load(index)
             else:
                 index = Constant(IntType(32), 0)
             tempPtr = self.Builder.gep(identifier['ptr'], [Constant(IntType(32), 0), index], inbounds=True)
             if isinstance(value, GEPInstr):
                 value = self.Builder.load(value)
             return self.Builder.store(value, tempPtr)
+        if isinstance(value.type, PointerType):
+            value = self.Builder.load(value)
         return self.Builder.store(value, identifier['ptr'])
 
     def visitExpr(self, ctx: SmallCParser.ExprContext):
@@ -488,12 +492,20 @@ class GeneratorVisitor(SmallCVisitor):
     def visitEquation(self, ctx: SmallCParser.EquationContext):
         if (ctx.PLUS()):
             equation = self.getVal_of_expr(ctx.equation())
-            equation = self.Builder.load(equation)
-            return self.Builder.add(equation, self.getVal_of_expr(ctx.term()))
+            if isinstance(equation.type, PointerType):
+                equation = self.Builder.load(equation)
+            term = self.getVal_of_expr(ctx.term())
+            if isinstance(term.type, PointerType):
+                term = self.Builder.load(term)
+            return self.Builder.add(equation, term)
         if (ctx.MINUS()):
             equation = self.getVal_of_expr(ctx.equation())
-            equation = self.Builder.load(equation)
-            return self.Builder.sub(equation, self.getVal_of_expr(ctx.term()))
+            if isinstance(equation.type, PointerType):
+                equation = self.Builder.load(equation)
+            term = self.getVal_of_expr(ctx.term())
+            if isinstance(term.type, PointerType):
+                term = self.Builder.load(term)
+            return self.Builder.sub(equation, term)
         return self.visitChildren(ctx)
 
     def visitIdentifier(self, ctx: SmallCParser.IdentifierContext):
@@ -521,7 +533,9 @@ class GeneratorVisitor(SmallCVisitor):
         #         return temp_ptr
         if isinstance(temp['type'], ArrayType):
             if ctx.array_indexing():
-                index = self.getVal_of_expr(temp.array_indexing().expr())
+                index = self.getVal_of_expr(ctx.array_indexing().expr())
+                if isinstance(index.type, PointerType):
+                    index = self.Builder.load(index)
                 temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
                 return temp_ptr
             else:
