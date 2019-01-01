@@ -95,6 +95,8 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitFunction_definition(self, ctx: SmallCParser.Function_definitionContext):
         retType = self.getType(ctx.type_specifier().getText())
+        if ctx.identifier().ASTERIKS():
+            retType = retType.as_pointer()
         argsType = []
         argsName = []
         # args
@@ -117,15 +119,15 @@ class GeneratorVisitor(SmallCVisitor):
             funcType = FunctionType(retType, ())
 
         # function
-        if ctx.identifier().getText() in self.function_dict:
-            func = self.function_dict[ctx.identifier().getText()]
+        if ctx.identifier().IDENTIFIER().getText() in self.function_dict:
+            func = self.function_dict[ctx.identifier().IDENTIFIER().getText()]
         else:
-            func = Function(self.Module, funcType, name=ctx.identifier().getText())
-            self.function_dict[ctx.identifier().getText()] = func
+            func = Function(self.Module, funcType, name=ctx.identifier().IDENTIFIER().getText())
+            self.function_dict[ctx.identifier().IDENTIFIER().getText()] = func
         # blocks or ;
         if ctx.compound_stmt():
-            self.function = ctx.identifier().getText()
-            block = func.append_basic_block(ctx.identifier().getText())
+            self.function = ctx.identifier().IDENTIFIER().getText()
+            block = func.append_basic_block(ctx.identifier().IDENTIFIER().getText())
             varDict = dict()
             self.Builder = IRBuilder(block)
             for i, arg in enumerate(func.args):
