@@ -170,6 +170,7 @@ class GeneratorVisitor(SmallCVisitor):
             return self.visit(ctx.assignment())
         elif ctx.functioncall():
             return self.visit(ctx.functioncall())
+
     #
     # def visitCondition(self, ctx:SmallCParser.ConditionContext):
     #     if ctx.expr():
@@ -204,6 +205,35 @@ class GeneratorVisitor(SmallCVisitor):
     #         return self.visit(ctx.relation())
 
     # def visitRelation(self, ctx:SmallCParser.RelationContext):
+
+    def visitWhile_stmt(self, ctx: SmallCParser.While_stmtContext):
+        func = self.function_dict[self.function]
+
+        end_block = func.append_basic_block()
+        self.block_stack.append(end_block)
+
+        cond_block = func.append_basic_block()
+        self.block_stack.append(cond_block)
+        stmt_block = func.append_basic_block()
+        self.block_stack.append(stmt_block)
+
+        self.Builder.branch(cond_block)
+
+        with self.Builder.goto_block(cond_block):
+            expr = self.getVal_of_expr(ctx.expr())
+            cond_expr = self.toBool(self.Builder, expr)
+            self.Builder.cbranch(cond_expr, stmt_block, end_block)
+
+        with self.Builder.goto_block(stmt_block):
+            self.visit(ctx.stmt())
+            self.Builder.branch(cond_block)
+
+        self.Builder.position_at_start(end_block)
+
+        self.block_stack.pop()
+        self.block_stack.pop()
+        self.block_stack.pop()
+
 
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
         var_map = self.var_stack[-1]
@@ -253,7 +283,6 @@ class GeneratorVisitor(SmallCVisitor):
 
         var_map[identifier.getText()] = {"id": identifier.getText(), "type": type, "value": value, "ptr": ptr}
         return ptr
-
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
         if ctx.BOOLEAN():
