@@ -9,6 +9,12 @@ int main()
     }
     else
     {
-        b = 0;
+        if(b)
+         {
+            b = 0;
+         }
     }
+
+    int c = 2;
+    return 0;
 }

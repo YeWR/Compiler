@@ -45,8 +45,15 @@ class GeneratorVisitor(SmallCVisitor):
         zero = Constant(self.getType('bool'), 0)
         return builder.icmp_signed('!=', value, zero)
 
-    def tempVal(self, builder, ptr):
-        return builder.load(ptr)
+    def getVal_of_expr(self, expr):
+        var_map = self.var_stack[-1]
+        temp = self.visit(expr)
+        if not isinstance(temp, Constant):
+            temp_ptr = var_map[temp.getText()]['ptr']
+            value = self.Builder.load(temp_ptr)
+        else:
+            value = temp
+        return value
 
     def getType(self, type):
         if type == 'int':
@@ -190,12 +197,7 @@ class GeneratorVisitor(SmallCVisitor):
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
         var_map = self.var_stack[-1]
 
-        temp = self.visit(ctx.expr())
-        if not isinstance(temp, Constant):
-            temp_ptr = var_map[temp.getText()]['ptr']
-            expr = self.tempVal(self.Builder, temp_ptr)
-        else:
-            expr = temp
+        expr = self.getVal_of_expr(ctx.expr())
 
         cond_expr = self.toBool(self.Builder, expr)
         else_expr = ctx.ELSE()
@@ -233,12 +235,7 @@ class GeneratorVisitor(SmallCVisitor):
 
         expr = ctx.expr()
         if expr:
-            temp = self.visit(expr)
-            if not isinstance(temp, Constant):
-                temp_ptr = var_map[temp.getText()]['ptr']
-                value = self.tempVal(self.Builder, temp_ptr)
-            else:
-                value = temp
+            value = self.getVal_of_expr(expr)
         else:
             value = Constant(type, None)
 
