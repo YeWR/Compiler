@@ -20,7 +20,7 @@ type_specifier : CONST? (FLOAT | INT | CHAR | BOOL | VOID);
 
 param_decl_list : parameter_decl (',' parameter_decl )*;
 
-parameter_decl : type_specifier identifier?;
+parameter_decl : type_specifier identifier? | TRIPLEPOINT;
 
 param_list : expr (',' expr )*;
 
@@ -131,6 +131,7 @@ OR : '||';
 AND : '&&';
 EQUALITY : '==';
 NEQUALITY : '!=';
+TRIPLEPOINT: '...';
 
 // text formatting
 COMMENT : ('/*' (.)*? '*/' | '//' (.)*? '\n') -> skip;
