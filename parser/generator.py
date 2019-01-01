@@ -133,7 +133,8 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitStmt(self, ctx: SmallCParser.StmtContext):
         if ctx.RETURN():
-            self.Builder.ret(Constant(self.getType('int'), 0))
+            value = self.getVal_of_expr(ctx.expr())
+            self.Builder.ret(Constant(self.getType('int'), value))
         return self.visitChildren(ctx)
 
     def visitCompound_stmt(self, ctx: SmallCParser.Compound_stmtContext):
@@ -228,7 +229,6 @@ class GeneratorVisitor(SmallCVisitor):
 
     def visitVariable_id(self, ctx: SmallCParser.Variable_idContext):
         identifier = ctx.identifier()
-        builder = IRBuilder(self.block_stack[-1])
         var_map = self.var_stack[-1]
         type = self.cur_decl_type
         ptr = self.Builder.alloca(typ=type, name=identifier.getText())
