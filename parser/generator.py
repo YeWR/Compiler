@@ -160,47 +160,70 @@ class GeneratorVisitor(SmallCVisitor):
         identifier = self.getVal_local(identifier.getText())
         return self.Builder.store(value, identifier['ptr'])
 
-    # def visitExpr(self, ctx: SmallCParser.ExprContext):
-    #     if ctx.condition():
-    #         return self.visit(ctx.condition())
-    #     elif ctx.assignment():
-    #         return self.visit(ctx.assignment())
-    #     elif ctx.functioncall():
-    #         return self.visit(ctx.functioncall())
-    #
-    # def visitCondition(self, ctx:SmallCParser.ConditionContext):
-    #     if ctx.expr():
-    #         disjunction = self.visit(ctx.disjunction())
-    #         expr = self.visit(ctx.expr())
-    #         condition = self.visit(ctx.condition())
-    #     else:
-    #         return self.visit(ctx.disjunction())
-    #
-    # def visitDisjunction(self, ctx:SmallCParser.DisjunctionContext):
-    #     if ctx.disjunction():
-    #         disjunction = self.visit(ctx.disjunction())
-    #         conjunction = self.visit(ctx.conjunction())
-    #     else:
-    #         return self.visit(ctx.conjunction())
-    #
-    # def visitConjunction(self, ctx:SmallCParser.ConjunctionContext):
-    #     if ctx.conjunction():
-    #         conjunction = self.visit(ctx.conjunction())
-    #         comparison = self.visit(ctx.comparison())
-    #     else:
-    #         return self.visit(ctx.comparison())
-    #
-    # def visitComparison(self, ctx:SmallCParser.ComparisonContext):
-    #     if ctx.EQUALITY():
-    #         relation1 = self.visit(ctx.relation(0))
-    #         relation2 = self.visit(ctx.relation(1))
-    #     elif ctx.NEQUALITY():
-    #         relation1 = self.visit(ctx.relation(0))
-    #         relation2 = self.visit(ctx.relation(1))
-    #     else:
-    #         return self.visit(ctx.relation())
+    def visitExpr(self, ctx: SmallCParser.ExprContext):
+        if ctx.condition():
+            return self.visit(ctx.condition())
+        elif ctx.assignment():
+            return self.visit(ctx.assignment())
+        elif ctx.functioncall():
+            return self.visit(ctx.functioncall())
 
-    # def visitRelation(self, ctx:SmallCParser.RelationContext):
+    def visitCondition(self, ctx:SmallCParser.ConditionContext):
+        if ctx.expr():
+            disjunction = self.getVal_of_expr(ctx.disjunction())
+            expr = self.getVal_of_expr(ctx.expr())
+            condition = self.getVal_of_expr(ctx.condition())
+            return self.Builder.select(disjunction,expr,condition)
+        else:
+            return self.getVal_of_expr(ctx.disjunction())
+
+    def visitDisjunction(self, ctx:SmallCParser.DisjunctionContext):
+        if ctx.disjunction():
+            disjunction = self.getVal_of_expr(ctx.disjunction())
+            conjunction = self.getVal_of_expr(ctx.conjunction())
+            left = self.Builder.icmp_signed('!=',disjunction,Constant(disjunction.type,0))
+            right = self.Builder.icmp_signed('!=', conjunction, Constant(conjunction.type, 0))
+            return self.Builder.or_(left,right)
+        else:
+            return self.getVal_of_expr(ctx.conjunction())
+
+    def visitConjunction(self, ctx:SmallCParser.ConjunctionContext):
+        if ctx.conjunction():
+            conjunction = self.getVal_of_expr(ctx.conjunction())
+            comparison = self.getVal_of_expr(ctx.comparison())
+            left = self.Builder.icmp_signed('!=', conjunction, Constant(conjunction.type, 0))
+            right = self.Builder.icmp_signed('!=', comparison, Constant(comparison.type, 0))
+            return self.Builder.and_(left,right)
+        else:
+            return self.getVal_of_expr(ctx.comparison())
+
+    def visitComparison(self, ctx:SmallCParser.ComparisonContext):
+        if ctx.EQUALITY():
+            relation1 = self.getVal_of_expr(ctx.relation(0))
+            relation2 = self.getVal_of_expr(ctx.relation(1))
+            return self.Builder.icmp_signed('==',relation1,relation2)
+        elif ctx.NEQUALITY():
+            relation1 = self.getVal_of_expr(ctx.relation(0))
+            relation2 = self.getVal_of_expr(ctx.relation(1))
+            return self.Builder.icmp_signed('!=', relation1, relation2)
+        else:
+            return self.getVal_of_expr(ctx.relation(0))
+
+    def visitRelation(self, ctx:SmallCParser.RelationContext):
+        if len(ctx.equation()) > 1:
+            equation1 = self.getVal_of_expr(ctx.equation(0))
+            equation2 = self.getVal_of_expr(ctx.equation(1))
+            if ctx.LEFTANGLE():
+                value = self.Builder.icmp_signed('<',equation1,equation2)
+            elif ctx.RIGHTANGLE():
+                value = self.Builder.icmp_signed('>',equation1,equation2)
+            elif ctx.LEFTANGLEEQUAL():
+                value = self.Builder.icmp_signed('<=',equation1,equation2)
+            elif ctx.RIGHTANGLEEQUAL():
+                value = self.Builder.icmp_signed('>=',equation1,equation2)
+            return value
+        else:
+            return self.getVal_of_expr(ctx.equation(0))
 
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
         var_map = self.var_stack[-1]
@@ -251,14 +274,12 @@ class GeneratorVisitor(SmallCVisitor):
         var_map[identifier.getText()] = {"id": identifier.getText(), "type": type, "value": value, "ptr": ptr}
         return ptr
 
-    def visitExpr(self, ctx: SmallCParser.ExprContext):
-        return self.visitChildren(ctx)
 
     def visitPrimary(self, ctx: SmallCParser.PrimaryContext):
         if ctx.BOOLEAN():
             return Constant(IntType(1), ctx.getText())
         elif ctx.INTEGER():
-            return Constant(IntType(32), ctx.getText())
+            return Constant(IntType(32), int(ctx.getText()))
         elif ctx.REAL():
             return Constant(FloatType, ctx.getText())
         elif ctx.CHARCONST():
