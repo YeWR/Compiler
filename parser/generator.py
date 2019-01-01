@@ -122,7 +122,9 @@ class GeneratorVisitor(SmallCVisitor):
         args = []
         if ctx.param_list():
             for param in ctx.param_list().getChildren():
-                temp = self.visit(param)
+                if(param.getText() == ','):
+                    continue
+                temp = self.getVal_of_expr(param)
                 args.append(temp)
         function = self.function_dict[ctx.identifier().getText()]
         return self.Builder.call(function, args)
@@ -361,7 +363,7 @@ class GeneratorVisitor(SmallCVisitor):
         elif ctx.functioncall():
             return self.visit(ctx.functioncall())
         elif ctx.expr():
-            return self.visit(ctx.expr()) # to do
+            return self.visit(ctx.expr())
         else:
             return self.error("type error in <visitPrimary>")
 
