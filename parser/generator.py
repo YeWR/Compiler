@@ -68,6 +68,8 @@ class GeneratorVisitor(SmallCVisitor):
             return FloatType()
         elif type == 'bool':
             return IntType(1)
+        elif type == 'void':
+            return VoidType()
         else:
             self.error("type error in <getType>")
 
@@ -115,6 +117,8 @@ class GeneratorVisitor(SmallCVisitor):
                 varDict[arg.name] = alloca
             self.var_stack.append(varDict)
             self.visit(ctx.compound_stmt())
+            if isinstance(retType, VoidType):
+                self.Builder.ret_void()
             self.var_stack.pop()
             self.function = None
         return
