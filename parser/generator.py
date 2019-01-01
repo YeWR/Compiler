@@ -414,14 +414,15 @@ class GeneratorVisitor(SmallCVisitor):
         elif ctx.REAL():
             return Constant(FloatType, float(ctx.getText()))
         elif ctx.CHARCONST():
+            tempStr = ctx.getText()[1:-1]
+            tempStr = tempStr.replace('\\n', '\n')
             if ctx.getText()[0] == '"':
-                tempStr = ctx.getText()[1:-1]
-                tempStr = tempStr.replace('\\n','\n')
                 tempStr += '\0'
-                ptr = self.Builder.alloca(typ=ArrayType(IntType(8),len(tempStr)), name="str_" + tempStr)
-                ptr.initializer = Constant(ArrayType(IntType(8),len(tempStr)),bytearray(tempStr,'utf-8'))
-                return self.Builder.gep(ptr,[Constant(IntType(32),0),Constant(IntType(32),0)], inbounds=True)
-            return Constant(IntType(8), ctx.getText()[1:-1])
+                temp = GlobalVariable(self.Module,ArrayType(IntType(8),len(tempStr)), name="str_" + tempStr)
+                temp.initializer = Constant(ArrayType(IntType(8),len(tempStr)), bytearray(tempStr,encoding='utf-8'))
+                temp.global_constant = True
+                return self.Builder.gep(temp,[Constant(IntType(32),0),Constant(IntType(32),0)], inbounds=True)
+            return Constant(IntType(8), ord(tempStr[0]))
         elif ctx.identifier():
             return self.visit(ctx.identifier())
         elif ctx.functioncall():
