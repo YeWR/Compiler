@@ -11,18 +11,14 @@ int isOperate(char s) {
 	if (s == '+' || s == '-' || s == '*' || s == '/') {
 		return 1;
 	}
-	else {
-		return 0;
-	}
+	return 0;
 }
 
 int isPart(char s) {
 	if (s == '(' || s == ')') {
 		return 1;
 	}
-	else {
-		return 0;
-	}
+	return 0;
 }
 
 int isPrior(char s, char t) {
@@ -45,6 +41,7 @@ int cal() {
 	int num;
 	num = 0;
 	for (i = 0; i < len; i=i+1) {
+	printf(">>>>>> %d\n", operate_top);
 		if (isOperate(src[i]) || isPart(src[i])) {
 			if (isOperate(src[i])) {
 				if (operate_top == -1) {
@@ -75,7 +72,7 @@ int cal() {
 							continue;
 						}
 						if (operate[operate_top] != '(') {
-							number_top--;
+							number_top = number_top - 1;
 							operate[operate_top] = src[i];
 						}
 					}
@@ -100,25 +97,26 @@ int cal() {
 						if (operate[operate_top] == '/') {
 							number[number_top - 1] = number[number_top - 1] / number[number_top];
 						}
-						number_top--;
-						operate_top--;
+						number_top = number_top - 1;
+						operate_top = operate_top - 1;
 					}
-					operate_top--;
+					operate_top = operate_top - 1;
 				}
 			}
 		}
 		else {
 			num = num * 10;
-			num += src[i] - '0';
+			num = num + src[i] - '0';
 			if (i == len - 1 || (i != len-1 && (isOperate(src[i+1]) || isPart(src[i+1])))) {
 				number[number_top + 1] = num;
 				number_top = number_top+1;
 				num = 0;
-			} 
+			}
 		}
 	}
 	while (operate_top != -1 || number_top != 0)
 	{
+	printf(">>> %d\n", operate_top);
 		if (operate[operate_top] == '+') {
 			number[number_top - 1] = number[number_top] + number[number_top - 1];
 		}
@@ -131,8 +129,8 @@ int cal() {
 		if (operate[operate_top] == '/') {
 			number[number_top - 1] = number[number_top - 1] / number[number_top];
 		}
-		number_top--;
-		operate_top--;
+		number_top = number_top - 1;
+		operate_top = operate_top - 1;
 	}
 	return number[0];
 }

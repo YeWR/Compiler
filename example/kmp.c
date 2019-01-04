@@ -1,19 +1,18 @@
-int printf(char* format, ...);
-char * gets (char * str);
 char src[1000];
 char pattern[100];
 int prefix[100];
 int n;
 int m;
 
+int printf(char* format, ...);
+char * gets (char * str);
+
 /* KMP algorithm */
 void KMP_matching()
 {
-	int flag;
-	int k;
-	int q, i;
-	flag = 0;
-	k = 0;
+	int flag = 0;
+	int k = 0;
+	int q = 0;
 	/* Compute prefix*/
 	for (q = 2; q <= m; q=q+1)
 	{
@@ -25,19 +24,21 @@ void KMP_matching()
 	}
 	/* Match!*/
 	q = 0;
-	for (i = 0; i < n; i=i+1)
+	for (int j = 0; j < n; j=j+1)
 	{
-		while (q > 0 && pattern[q] != src[i])
+		while (q > 0 && pattern[q] != src[j])
 			q = prefix[q - 1];
-		if (pattern[q] == src[i])
+		if (pattern[q] == src[j])
 			q=q+1;
-		if (q == m) 
+		if (q == m)
 		{
 			if (flag == 0) {
-				printf("%d", i - m + 1);
+			    int temp1 = j - m +1;
+				printf("%d", temp1);
 			}
 			else {
-				printf(",%d", i - m +1);
+			    int temp2 = j - m +1;
+				printf(",%d", temp2);
 			}
 			flag = 1;
 			/* next match */
@@ -53,20 +54,20 @@ int main() {
 	printf("please input two strings, first is src, second is pattern\n");
 	n = 0;
 	m = 0;
-	int i;
-	i = 0;
-	for (i = 0; i < 1000; i=i+1) {
+	for (int i = 0; i < 1000; i=i+1) {
 		src[i] = '\0';
 	}
-	for (i = 0; i < 100; i=i+1) {
+	for (int i = 0; i < 100; i=i+1) {
 		pattern[i] = '\0';
 	}
-	for (i = 0; i < 100; i=i+1) {
+	for (int i = 0; i < 100; i=i+1) {
 		prefix[i] = 0;
 	}
 	gets(src);
 	gets(pattern);
-	for (i = 0; i < 1000; i=i+1) {
+	printf("%s\n", src);
+	printf("%s\n", pattern);
+	for (int i = 0; i < 1000; i=i+1) {
 		if (src[i] == '\0') {
 			n = i;
 			break;
@@ -76,7 +77,7 @@ int main() {
 			break;
 		}
 	}
-	for (i = 0; i < 100; i=i+1) {
+	for (int i = 0; i < 100; i=i+1) {
 		if (pattern[i] == '\0') {
 			m = i;
 			break;

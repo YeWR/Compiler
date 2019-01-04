@@ -194,6 +194,8 @@ class GeneratorVisitor(SmallCVisitor):
     def visitStmt(self, ctx: SmallCParser.StmtContext):
         if ctx.RETURN():
             value = self.getVal_of_expr(ctx.expr())
+            if isinstance(value.type, PointerType):
+                value = self.Builder.load(value)
             return self.Builder.ret(value)
         elif ctx.CONTINUE():
             self.signal_stack[-1] = 1
@@ -494,6 +496,8 @@ class GeneratorVisitor(SmallCVisitor):
             value = self.getVal_of_expr(expr)
         else:
             value = Constant(type, None)
+        if isinstance(value.type, PointerType):
+            value = self.Builder.load(value)
         self.Builder.store(value, ptr)
         var_map[identifier.IDENTIFIER().getText()] = {"id": identifier.IDENTIFIER().getText(), "type": type,
                                                       "value": value, "ptr": ptr}
@@ -528,6 +532,12 @@ class GeneratorVisitor(SmallCVisitor):
             return self.error("type error in <visitPrimary>")
 
     def visitFactor(self, ctx: SmallCParser.FactorContext):
+        if(ctx.MINUS()):
+            factor = self.getVal_of_expr(ctx.factor())
+            if isinstance(factor.type, PointerType):
+                factor = self.Builder.load(factor)
+            factor = self.Builder.neg(factor)
+            return factor
         return self.visitChildren(ctx)
 
     def visitTerm(self, ctx: SmallCParser.TermContext):
@@ -546,7 +556,7 @@ class GeneratorVisitor(SmallCVisitor):
             factor = self.getVal_of_expr(ctx.factor())
             if isinstance(factor.type, PointerType):
                 factor = self.Builder.load(factor)
-            return self.Builder.fdiv(term, factor)
+            return self.Builder.sdiv(term, factor)
         return self.visitChildren(ctx)
 
     def visitEquation(self, ctx: SmallCParser.EquationContext):
@@ -554,17 +564,25 @@ class GeneratorVisitor(SmallCVisitor):
             equation = self.getVal_of_expr(ctx.equation())
             if isinstance(equation.type, PointerType):
                 equation = self.Builder.load(equation)
+            if str(equation.type) != 'i32':
+                equation = self.Builder.zext(equation, IntType(32))
             term = self.getVal_of_expr(ctx.term())
             if isinstance(term.type, PointerType):
                 term = self.Builder.load(term)
+            if str(term.type) != 'i32':
+                term = self.Builder.zext(term, IntType(32))
             return self.Builder.add(equation, term)
         if (ctx.MINUS()):
             equation = self.getVal_of_expr(ctx.equation())
             if isinstance(equation.type, PointerType):
                 equation = self.Builder.load(equation)
+            if str(equation.type) != 'i32':
+                equation = self.Builder.zext(equation, IntType(32))
             term = self.getVal_of_expr(ctx.term())
             if isinstance(term.type, PointerType):
                 term = self.Builder.load(term)
+            if str(term.type) != 'i32':
+                term = self.Builder.zext(term, IntType(32))
             return self.Builder.sub(equation, term)
         return self.visitChildren(ctx)
 
