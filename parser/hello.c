@@ -1,10 +1,12 @@
+int printf(char* format, ...);
+char * gets (char * str);
+
+
 char src[1000];
 char pattern[100];
 int prefix[100];
 int n;
 int m;
-int printf(char* format, ...);
-char * gets (char * str);
 
 /* KMP algorithm */
 void KMP_matching()
@@ -25,7 +27,6 @@ void KMP_matching()
 	q = 0;
 	for (int j = 0; j < n; j=j+1)
 	{
-	    printf("%d\n", j);
 		while (q > 0 && pattern[q] != src[j])
 			q = prefix[q - 1];
 		if (pattern[q] == src[j])

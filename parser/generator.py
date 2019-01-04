@@ -364,9 +364,9 @@ class GeneratorVisitor(SmallCVisitor):
 
         with self.Builder.goto_block(stmt_block):
             # expr
+            self.visit(ctx.stmt())
             expr = ctx.expr(1)
             self.visit(expr)
-            self.visit(ctx.stmt())
             self.Builder.branch(cond_block)
             if self.signal_stack[-1] == 0:
                 loop_blocks = self.loop_stack[-1]
@@ -423,7 +423,6 @@ class GeneratorVisitor(SmallCVisitor):
         self.var_stack.pop()
 
     def visitCond_stmt(self, ctx: SmallCParser.Cond_stmtContext):
-        var_map = self.var_stack[-1]
 
         expr = self.getVal_of_expr(ctx.expr())
 
@@ -433,15 +432,22 @@ class GeneratorVisitor(SmallCVisitor):
         if else_expr:
             with self.Builder.if_else(cond_expr) as (then, otherwise):
                 with then:
+                    self.var_stack.append({})
                     true_stmt = ctx.stmt(0)
                     self.visit(true_stmt)
+                    self.var_stack.pop()
                 with otherwise:
+                    self.var_stack.append({})
                     else_stmt = ctx.stmt(1)
                     self.visit(else_stmt)
+                    self.var_stack.pop()
         else:
             with self.Builder.if_then(cond_expr):
+                self.var_stack.append({})
                 true_stmt = ctx.stmt(0)
                 self.visit(true_stmt)
+                self.var_stack.pop()
+        return None
 
     def visitVar_decl(self, ctx: SmallCParser.Var_declContext):
         self.cur_decl_type = self.getType(ctx.type_specifier().getText())
@@ -591,10 +597,15 @@ class GeneratorVisitor(SmallCVisitor):
                 if isinstance(index.type, PointerType):
                     index = self.Builder.load(index)
                 temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), index], inbounds=True)
+                value = self.Builder.load(temp_ptr)
+                self.var_stack[-1][temp_ptr.name] = {'id': temp_ptr.name, 'type': temp_ptr.type, 'value': value,
+                                                     'ptr': temp_ptr}
                 return temp_ptr
             else:
                 temp_ptr = self.Builder.gep(temp_ptr, [Constant(IntType(32), 0), Constant(IntType(32), 0)],
                                             inbounds=True)
+                value = self.Builder.load(temp_ptr)
+                self.var_stack[-1][temp_ptr.name] = {'id': temp_ptr.name, 'type': temp_ptr.type, 'value': value, 'ptr': temp_ptr}
                 return temp_ptr
         temp_val = temp['ptr']
         return temp_val
