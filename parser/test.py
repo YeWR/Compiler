@@ -17,7 +17,7 @@ if __name__ == '__main__':
     # walker = ParseTreeWalker()
     # walker.walk(listener, tree)
 
-    output_file = None # open(sys.argv[2], "w+")
+    output_file = sys.argv[2]
     eval = GeneratorVisitor(output_file)
     eval.visit(tree)
     eval.print()

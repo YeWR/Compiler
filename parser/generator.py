@@ -18,6 +18,7 @@ class GeneratorVisitor(SmallCVisitor):
     def __init__(self, output_file=None):
         super(SmallCVisitor, self).__init__()
         self.Module = Module(name=__file__)
+        self.Module.triple = "x86_64-pc-linux-gnu"
         self.Builder = None
         self.function = None
         self.NamedValues = dict()
@@ -37,7 +38,9 @@ class GeneratorVisitor(SmallCVisitor):
         if not self.output_file:
             print(self.Module)
         else:
-            self.output_file.write(self.Module)
+            f = open(self.output_file, "w+")
+            f.write(self.Module.__str__())
+            f.close()
 
     def error(self, info):
         print("Error: ", info)

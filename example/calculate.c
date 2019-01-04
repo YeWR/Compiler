@@ -41,7 +41,6 @@ int cal() {
 	int num;
 	num = 0;
 	for (i = 0; i < len; i=i+1) {
-	printf(">>>>>> %d\n", operate_top);
 		if (isOperate(src[i]) || isPart(src[i])) {
 			if (isOperate(src[i])) {
 				if (operate_top == -1) {
@@ -116,7 +115,6 @@ int cal() {
 	}
 	while (operate_top != -1 || number_top != 0)
 	{
-	printf(">>> %d\n", operate_top);
 		if (operate[operate_top] == '+') {
 			number[number_top - 1] = number[number_top] + number[number_top - 1];
 		}
