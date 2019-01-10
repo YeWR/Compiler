@@ -1,4 +1,4 @@
-﻿int printf(char* format, ...);
+int printf(char* format, ...);
 char * gets (char * str);
 char src[1000];
 int len;

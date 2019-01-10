@@ -65,8 +65,6 @@ int main() {
 	}
 	gets(src);
 	gets(pattern);
-	printf("%s\n", src);
-	printf("%s\n", pattern);
 	for (int i = 0; i < 1000; i=i+1) {
 		if (src[i] == '\0') {
 			n = i;

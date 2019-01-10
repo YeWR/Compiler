@@ -1,11 +1,12 @@
 int printf(char* format, ...);
 char * gets(char * str);
+int a[1000];
 
-int split(int a[], int low, int high)
+int split(int low, int high)
 {
 	int part_element = a[low];
 
-	for (;;) {
+	while (1) {
 		while (low < high && part_element <= a[high]) {
 			high = high - 1;
 		}
@@ -25,29 +26,32 @@ int split(int a[], int low, int high)
 	return high;
 }
 
-void quicksort(int a[], int low, int high)
+void quicksort(int low, int high)
 {
 	int middle;
 
-	if (low >= high) return;
-	middle = split(a, low, high);
-	quicksort(a, low, (middle - 1));
-	quicksort(a, (middle + 1), high);
+	if (low < high)
+	{
+		middle = split(low, high);
+		int middle1 = middle - 1;
+		quicksort(low, middle1);
+		int middle2 = middle + 1;
+		quicksort(middle2, high);
+	}
 }
 
 int main(void)
 {
 	char str[1000];
 	int i;
-	for (i = 0; i < 1000; i++) {
+	for (i = 0; i < 1000; i = i + 1) {
 		str[i] = '\0';
 	}
 	gets(str);
-	int a[1000];
 	int k = 0;
 	int temp = 0;
 	int flag = 0;
-	for (i = 0; i < 1000; i++) {
+	for (i = 0; i < 1000; i = i + 1) {
 		if (str[i] == '\0') {
 			flag = 0;
 			a[k] = temp;
@@ -72,9 +76,9 @@ int main(void)
 		}
 	}
 
-	quicksort(a, 0, k);
+	quicksort(0, k);
 	
-	for (i = 0; i < k+1; i++) {
+	for (i = 0; i < k+1; i = i + 1) {
 		printf("%d ", a[i]);
 	}
 	printf("\n");
