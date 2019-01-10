@@ -40,12 +40,13 @@ void quicksort(int low, int high)
 	}
 }
 
-int main(void)
+int main()
 {
 	char str[1000];
 	int i;
 	for (i = 0; i < 1000; i = i + 1) {
 		str[i] = '\0';
+		a[i] = 0;
 	}
 	gets(str);
 	int k = 0;
@@ -79,7 +80,8 @@ int main(void)
 	quicksort(0, k);
 	
 	for (i = 0; i < k+1; i = i + 1) {
-		printf("%d ", a[i]);
+		int pt = a[i];
+		printf("%d ", pt);
 	}
 	printf("\n");
 	return 0;

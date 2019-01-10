@@ -1,0 +1,333 @@
+; ModuleID = "/home/quicker/Documents/compiler/Compiler/parser/generator.py"
+target triple = "x86_64-pc-linux-gnu"
+target datalayout = ""
+
+declare i32 @"printf"(i8* %".1", ...) 
+
+declare i8* @"gets"(i8* %".1") 
+
+@"a" = global [1000 x i32] zeroinitializer
+define i32 @"split"(i32 %"low", i32 %"high") 
+{
+split:
+  %"low.1" = alloca i32
+  store i32 %"low", i32* %"low.1"
+  %"high.1" = alloca i32
+  store i32 %"high", i32* %"high.1"
+  %"part_element" = alloca i32
+  %".6" = load i32, i32* %"low.1"
+  %".7" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".6"
+  %".8" = load i32, i32* %".7"
+  %".9" = load i32, i32* %".7"
+  store i32 %".9", i32* %"part_element"
+  br label %".12"
+.11:
+  %".100" = load i32, i32* %"high.1"
+  %".101" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".100"
+  %".102" = load i32, i32* %"part_element"
+  store i32 %".102", i32* %".101"
+  %".104" = load i32, i32* %"high.1"
+  ret i32 %".104"
+.12:
+  %".16" = icmp ne i32 1, 0
+  br i1 %".16", label %".13", label %".11"
+.13:
+  br label %".19"
+.14:
+  br label %".18.endif"
+.18:
+  %".42" = load i32, i32* %"low.1"
+  %".43" = load i32, i32* %"high.1"
+  %".44" = icmp sge i32 %".42", %".43"
+  %".45" = icmp ne i1 %".44", 0
+  br i1 %".45", label %".18.if", label %".18.endif"
+.19:
+  %".23" = load i32, i32* %"low.1"
+  %".24" = load i32, i32* %"high.1"
+  %".25" = icmp slt i32 %".23", %".24"
+  %".26" = load i32, i32* %"part_element"
+  %".27" = load i32, i32* %"high.1"
+  %".28" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".27"
+  %".29" = load i32, i32* %".28"
+  %".30" = load i32, i32* %".28"
+  %".31" = icmp sle i32 %".26", %".30"
+  %".32" = icmp ne i1 %".25", 0
+  %".33" = icmp ne i1 %".31", 0
+  %".34" = and i1 %".32", %".33"
+  %".35" = icmp ne i1 %".34", 0
+  br i1 %".35", label %".20", label %".18"
+.20:
+  %".37" = load i32, i32* %"high.1"
+  %".38" = sub i32 %".37", 1
+  store i32 %".38", i32* %"high.1"
+  br label %".19"
+.21:
+  br label %".18"
+.18.if:
+  br label %".11"
+.18.endif:
+  %".49" = load i32, i32* %"high.1"
+  %".50" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".49"
+  %".51" = load i32, i32* %".50"
+  %".52" = load i32, i32* %"low.1"
+  %".53" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".52"
+  %".54" = load i32, i32* %".50"
+  store i32 %".54", i32* %".53"
+  %".56" = load i32, i32* %"low.1"
+  %".57" = add i32 %".56", 1
+  store i32 %".57", i32* %"low.1"
+  br label %".60"
+.59:
+  %".83" = load i32, i32* %"low.1"
+  %".84" = load i32, i32* %"high.1"
+  %".85" = icmp sge i32 %".83", %".84"
+  %".86" = icmp ne i1 %".85", 0
+  br i1 %".86", label %".59.if", label %".59.endif"
+.60:
+  %".64" = load i32, i32* %"low.1"
+  %".65" = load i32, i32* %"high.1"
+  %".66" = icmp slt i32 %".64", %".65"
+  %".67" = load i32, i32* %"low.1"
+  %".68" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".67"
+  %".69" = load i32, i32* %".68"
+  %".70" = load i32, i32* %".68"
+  %".71" = load i32, i32* %"part_element"
+  %".72" = icmp sle i32 %".70", %".71"
+  %".73" = icmp ne i1 %".66", 0
+  %".74" = icmp ne i1 %".72", 0
+  %".75" = and i1 %".73", %".74"
+  %".76" = icmp ne i1 %".75", 0
+  br i1 %".76", label %".61", label %".59"
+.61:
+  %".78" = load i32, i32* %"low.1"
+  %".79" = add i32 %".78", 1
+  store i32 %".79", i32* %"low.1"
+  br label %".60"
+.62:
+  br label %".59"
+.59.if:
+  br label %".11"
+.59.endif:
+  %".89" = load i32, i32* %"low.1"
+  %".90" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".89"
+  %".91" = load i32, i32* %".90"
+  %".92" = load i32, i32* %"high.1"
+  %".93" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".92"
+  %".94" = load i32, i32* %".90"
+  store i32 %".94", i32* %".93"
+  %".96" = load i32, i32* %"high.1"
+  %".97" = sub i32 %".96", 1
+  store i32 %".97", i32* %"high.1"
+  br label %".12"
+}
+
+define void @"quicksort"(i32 %"low", i32 %"high") 
+{
+quicksort:
+  %"low.1" = alloca i32
+  store i32 %"low", i32* %"low.1"
+  %"high.1" = alloca i32
+  store i32 %"high", i32* %"high.1"
+  %"middle" = alloca i32
+  store i32 0, i32* %"middle"
+  %".7" = load i32, i32* %"low.1"
+  %".8" = load i32, i32* %"high.1"
+  %".9" = icmp slt i32 %".7", %".8"
+  %".10" = icmp ne i1 %".9", 0
+  br i1 %".10", label %"quicksort.if", label %"quicksort.endif"
+quicksort.if:
+  %".12" = load i32, i32* %"low.1"
+  %".13" = load i32, i32* %"high.1"
+  %".14" = call i32 @"split"(i32 %".12", i32 %".13")
+  store i32 %".14", i32* %"middle"
+  %"middle1" = alloca i32
+  %".16" = load i32, i32* %"middle"
+  %".17" = sub i32 %".16", 1
+  store i32 %".17", i32* %"middle1"
+  %".19" = load i32, i32* %"low.1"
+  %".20" = load i32, i32* %"middle1"
+  call void @"quicksort"(i32 %".19", i32 %".20")
+  %"middle2" = alloca i32
+  %".22" = load i32, i32* %"middle"
+  %".23" = add i32 %".22", 1
+  store i32 %".23", i32* %"middle2"
+  %".25" = load i32, i32* %"middle2"
+  %".26" = load i32, i32* %"high.1"
+  call void @"quicksort"(i32 %".25", i32 %".26")
+  br label %"quicksort.endif"
+quicksort.endif:
+  ret void
+}
+
+define i32 @"main"() 
+{
+main:
+  %"str" = alloca [1000 x i8]
+  store [1000 x i8] zeroinitializer, [1000 x i8]* %"str"
+  %"i" = alloca i32
+  store i32 0, i32* %"i"
+  br label %".5"
+.4:
+  %".27" = getelementptr inbounds [1000 x i8], [1000 x i8]* %"str", i32 0, i32 0
+  %".28" = load i8, i8* %".27"
+  %".29" = call i8* @"gets"(i8* %".27")
+  %"k" = alloca i32
+  store i32 0, i32* %"k"
+  %"temp" = alloca i32
+  store i32 0, i32* %"temp"
+  %"flag" = alloca i32
+  store i32 0, i32* %"flag"
+  br label %".34"
+.5:
+  %"i.1" = alloca i32
+  store i32 0, i32* %"i.1"
+  br label %".6"
+.6:
+  %".12" = load i32, i32* %"i.1"
+  %".13" = icmp slt i32 %".12", 1000
+  %".14" = icmp ne i1 %".13", 0
+  br i1 %".14", label %".7", label %".4"
+.7:
+  %".16" = load i32, i32* %"i.1"
+  %".17" = getelementptr inbounds [1000 x i8], [1000 x i8]* %"str", i32 0, i32 %".16"
+  store i8 0, i8* %".17"
+  %".19" = load i32, i32* %"i.1"
+  %".20" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".19"
+  store i32 0, i32* %".20"
+  %".22" = load i32, i32* %"i.1"
+  %".23" = add i32 %".22", 1
+  store i32 %".23", i32* %"i.1"
+  br label %".6"
+.8:
+  br label %".4"
+.33:
+  %".115" = load i32, i32* %"k"
+  call void @"quicksort"(i32 0, i32 %".115")
+  br label %".118"
+.34:
+  %"i.2" = alloca i32
+  store i32 0, i32* %"i.2"
+  br label %".35"
+.35:
+  %".41" = load i32, i32* %"i.2"
+  %".42" = icmp slt i32 %".41", 1000
+  %".43" = icmp ne i1 %".42", 0
+  br i1 %".43", label %".36", label %".33"
+.36:
+  %".45" = load i32, i32* %"i.2"
+  %".46" = getelementptr inbounds [1000 x i8], [1000 x i8]* %"str", i32 0, i32 %".45"
+  %".47" = load i8, i8* %".46"
+  %".48" = load i8, i8* %".46"
+  %".49" = icmp eq i8 %".48", 0
+  %".50" = icmp ne i1 %".49", 0
+  br i1 %".50", label %".36.if", label %".36.else"
+.37:
+  br label %".36.endif"
+.36.if:
+  store i32 0, i32* %"flag"
+  %".53" = load i32, i32* %"k"
+  %".54" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".53"
+  %".55" = load i32, i32* %"temp"
+  store i32 %".55", i32* %".54"
+  br label %".33"
+.36.else:
+  %".59" = load i32, i32* %"i.2"
+  %".60" = getelementptr inbounds [1000 x i8], [1000 x i8]* %"str", i32 0, i32 %".59"
+  %".61" = load i8, i8* %".60"
+  %".62" = load i8, i8* %".60"
+  %".63" = icmp eq i8 %".62", 32
+  %".64" = icmp ne i1 %".63", 0
+  br i1 %".64", label %".36.else.if", label %".36.else.else"
+.36.endif:
+  %".111" = load i32, i32* %"i.2"
+  %".112" = add i32 %".111", 1
+  store i32 %".112", i32* %"i.2"
+  br label %".35"
+.36.else.if:
+  store i32 0, i32* %"flag"
+  %".67" = load i32, i32* %"k"
+  %".68" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".67"
+  %".69" = load i32, i32* %"temp"
+  store i32 %".69", i32* %".68"
+  %".71" = load i32, i32* %"k"
+  %".72" = add i32 %".71", 1
+  store i32 %".72", i32* %"k"
+  br label %".36.else.endif"
+.36.else.else:
+  %".75" = load i32, i32* %"flag"
+  %".76" = icmp eq i32 %".75", 1
+  %".77" = icmp ne i1 %".76", 0
+  br i1 %".77", label %".36.else.else.if", label %".36.else.else.else"
+.36.else.endif:
+  br label %".36.endif"
+.36.else.else.if:
+  %".79" = load i32, i32* %"temp"
+  %".80" = mul i32 %".79", 10
+  store i32 %".80", i32* %"temp"
+  %".82" = load i32, i32* %"temp"
+  %".83" = load i32, i32* %"i.2"
+  %".84" = getelementptr inbounds [1000 x i8], [1000 x i8]* %"str", i32 0, i32 %".83"
+  %".85" = load i8, i8* %".84"
+  %".86" = load i8, i8* %".84"
+  %".87" = zext i8 %".86" to i32
+  %".88" = add i32 %".82", %".87"
+  %".89" = zext i8 48 to i32
+  %".90" = sub i32 %".88", %".89"
+  store i32 %".90", i32* %"temp"
+  br label %".36.else.else.endif"
+.36.else.else.else:
+  store i32 0, i32* %"temp"
+  store i32 1, i32* %"flag"
+  %".95" = load i32, i32* %"temp"
+  %".96" = mul i32 %".95", 10
+  store i32 %".96", i32* %"temp"
+  %".98" = load i32, i32* %"temp"
+  %".99" = load i32, i32* %"i.2"
+  %".100" = getelementptr inbounds [1000 x i8], [1000 x i8]* %"str", i32 0, i32 %".99"
+  %".101" = load i8, i8* %".100"
+  %".102" = load i8, i8* %".100"
+  %".103" = zext i8 %".102" to i32
+  %".104" = add i32 %".98", %".103"
+  %".105" = zext i8 48 to i32
+  %".106" = sub i32 %".104", %".105"
+  store i32 %".106", i32* %"temp"
+  br label %".36.else.else.endif"
+.36.else.else.endif:
+  br label %".36.else.endif"
+.117:
+  %".144" = getelementptr inbounds [2 x i8], [2 x i8]* @"str_
+1", i32 0, i32 0
+  %".145" = call i32 (i8*, ...) @"printf"(i8* %".144")
+  ret i32 0
+.118:
+  %"i.3" = alloca i32
+  store i32 0, i32* %"i.3"
+  br label %".119"
+.119:
+  %".125" = load i32, i32* %"i.3"
+  %".126" = load i32, i32* %"k"
+  %".127" = add i32 %".126", 1
+  %".128" = icmp slt i32 %".125", %".127"
+  %".129" = icmp ne i1 %".128", 0
+  br i1 %".129", label %".120", label %".117"
+.120:
+  %"pt" = alloca i32
+  %".131" = load i32, i32* %"i.3"
+  %".132" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"a", i32 0, i32 %".131"
+  %".133" = load i32, i32* %".132"
+  %".134" = load i32, i32* %".132"
+  store i32 %".134", i32* %"pt"
+  %".136" = getelementptr inbounds [4 x i8], [4 x i8]* @"str_%d 0", i32 0, i32 0
+  %".137" = load i32, i32* %"pt"
+  %".138" = call i32 (i8*, ...) @"printf"(i8* %".136", i32 %".137")
+  %".139" = load i32, i32* %"i.3"
+  %".140" = add i32 %".139", 1
+  store i32 %".140", i32* %"i.3"
+  br label %".119"
+.121:
+  br label %".117"
+}
+
+@"str_%d 0" = constant [4 x i8] c"%d \00"
+@"str_
+1" = constant [2 x i8] c"\0a\00"
