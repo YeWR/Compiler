@@ -172,7 +172,7 @@ class GeneratorVisitor(SmallCVisitor):
                     temp_type = self.getVal_local(temp.name)['type']
                     if isinstance(temp_type, PointerType):
                         ptr_flag = True
-                if not ptr_flag:
+                if not ptr_flag and not isinstance(temp, Constant):
                     temp = self.Builder.load(temp)
                 args.append(temp)
 
