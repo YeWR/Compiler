@@ -12,13 +12,7 @@ if __name__ == '__main__':
     stream = CommonTokenStream(lexer)
     parser = SmallCParser(stream)
     tree = parser.smallc_program()
-    print(Trees.toStringTree(tree, None, parser))
-    # listener = SmallCListener()
-    # walker = ParseTreeWalker()
-    # walker.walk(listener, tree)
-
     output_file = sys.argv[2]
     eval = GeneratorVisitor(output_file)
     eval.visit(tree)
     eval.print()
-    # output_file.close()
