@@ -2,16 +2,16 @@
 target triple = "x86_64-pc-linux-gnu"
 target datalayout = ""
 
-declare i32 @"printf"(i8* %".1", ...) 
-
-declare i8* @"gets"(i8* %".1") 
-
 @"src" = global [1000 x i8] zeroinitializer
 @"len" = global i32 0
 @"operate" = global [1000 x i8] zeroinitializer
 @"operate_top" = global i32 0
 @"number" = global [1000 x i32] zeroinitializer
 @"number_top" = global i32 0
+declare i32 @"printf"(i8* %".1", ...) 
+
+declare i8* @"gets"(i8* %".1") 
+
 define i32 @"isOperate"(i8 %"s") 
 {
 isOperate:
@@ -117,7 +117,7 @@ cal:
   store i32 0, i32* %"num"
   br label %".9"
 .8:
-  br label %".413"
+  br label %".443"
 .9:
   %"i.1" = alloca i32
   store i32 0, i32* %"i.1"
@@ -145,7 +145,7 @@ cal:
   %".34" = icmp ne i1 %".33", 0
   br i1 %".34", label %".11.if", label %".11.else"
 .12:
-  br label %".11.if.if.else.else.endif.endif.endif.endif.endif"
+  br label %".8"
 .11.if:
   %".36" = load i32, i32* %"i.1"
   %".37" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".36"
@@ -155,54 +155,54 @@ cal:
   %".41" = icmp ne i32 %".40", 0
   br i1 %".41", label %".11.if.if", label %".11.if.endif"
 .11.else:
-  %".353" = load i32, i32* %"num"
-  %".354" = mul i32 %".353", 10
-  store i32 %".354", i32* %"num"
-  %".356" = load i32, i32* %"num"
-  %".357" = load i32, i32* %"i.1"
-  %".358" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".357"
-  %".359" = load i8, i8* %".358"
-  %".360" = load i8, i8* %".358"
-  %".361" = zext i8 %".360" to i32
-  %".362" = add i32 %".356", %".361"
-  %".363" = zext i8 48 to i32
-  %".364" = sub i32 %".362", %".363"
-  store i32 %".364", i32* %"num"
-  %".366" = load i32, i32* %"i.1"
-  %".367" = load i32, i32* @"len"
-  %".368" = sub i32 %".367", 1
-  %".369" = icmp eq i32 %".366", %".368"
-  %".370" = load i32, i32* %"i.1"
-  %".371" = load i32, i32* @"len"
-  %".372" = sub i32 %".371", 1
-  %".373" = icmp ne i32 %".370", %".372"
-  %".374" = load i32, i32* %"i.1"
-  %".375" = add i32 %".374", 1
-  %".376" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".375"
-  %".377" = load i8, i8* %".376"
-  %".378" = load i8, i8* %".376"
-  %".379" = call i32 @"isOperate"(i8 %".378")
-  %".380" = load i32, i32* %"i.1"
-  %".381" = add i32 %".380", 1
-  %".382" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".381"
-  %".383" = load i8, i8* %".382"
-  %".384" = load i8, i8* %".382"
-  %".385" = call i32 @"isPart"(i8 %".384")
-  %".386" = icmp ne i32 %".379", 0
-  %".387" = icmp ne i32 %".385", 0
-  %".388" = or i1 %".386", %".387"
-  %".389" = icmp ne i1 %".373", 0
-  %".390" = icmp ne i1 %".388", 0
-  %".391" = and i1 %".389", %".390"
-  %".392" = icmp ne i1 %".369", 0
-  %".393" = icmp ne i1 %".391", 0
-  %".394" = or i1 %".392", %".393"
-  %".395" = icmp ne i1 %".394", 0
-  br i1 %".395", label %".11.else.if", label %".11.else.endif"
+  %".382" = load i32, i32* %"num"
+  %".383" = mul i32 %".382", 10
+  store i32 %".383", i32* %"num"
+  %".385" = load i32, i32* %"num"
+  %".386" = load i32, i32* %"i.1"
+  %".387" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".386"
+  %".388" = load i8, i8* %".387"
+  %".389" = load i8, i8* %".387"
+  %".390" = zext i8 %".389" to i32
+  %".391" = add i32 %".385", %".390"
+  %".392" = zext i8 48 to i32
+  %".393" = sub i32 %".391", %".392"
+  store i32 %".393", i32* %"num"
+  %".395" = load i32, i32* %"i.1"
+  %".396" = load i32, i32* @"len"
+  %".397" = sub i32 %".396", 1
+  %".398" = icmp eq i32 %".395", %".397"
+  %".399" = load i32, i32* %"i.1"
+  %".400" = load i32, i32* @"len"
+  %".401" = sub i32 %".400", 1
+  %".402" = icmp ne i32 %".399", %".401"
+  %".403" = load i32, i32* %"i.1"
+  %".404" = add i32 %".403", 1
+  %".405" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".404"
+  %".406" = load i8, i8* %".405"
+  %".407" = load i8, i8* %".405"
+  %".408" = call i32 @"isOperate"(i8 %".407")
+  %".409" = load i32, i32* %"i.1"
+  %".410" = add i32 %".409", 1
+  %".411" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".410"
+  %".412" = load i8, i8* %".411"
+  %".413" = load i8, i8* %".411"
+  %".414" = call i32 @"isPart"(i8 %".413")
+  %".415" = icmp ne i32 %".408", 0
+  %".416" = icmp ne i32 %".414", 0
+  %".417" = or i1 %".415", %".416"
+  %".418" = icmp ne i1 %".402", 0
+  %".419" = icmp ne i1 %".417", 0
+  %".420" = and i1 %".418", %".419"
+  %".421" = icmp ne i1 %".398", 0
+  %".422" = icmp ne i1 %".420", 0
+  %".423" = or i1 %".421", %".422"
+  %".424" = icmp ne i1 %".423", 0
+  br i1 %".424", label %".11.else.if", label %".11.else.endif"
 .11.endif:
-  %".408" = load i32, i32* %"i.1"
-  %".409" = add i32 %".408", 1
-  store i32 %".409", i32* %"i.1"
+  %".437" = load i32, i32* %"i.1"
+  %".438" = add i32 %".437", 1
+  store i32 %".438", i32* %"i.1"
   br label %".10"
 .11.if.if:
   %".43" = load i32, i32* @"operate_top"
@@ -211,13 +211,13 @@ cal:
   %".46" = icmp ne i1 %".45", 0
   br i1 %".46", label %".11.if.if.if", label %".11.if.if.else"
 .11.if.endif:
-  %".213" = load i32, i32* %"i.1"
-  %".214" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".213"
-  %".215" = load i8, i8* %".214"
-  %".216" = load i8, i8* %".214"
-  %".217" = call i32 @"isPart"(i8 %".216")
-  %".218" = icmp ne i32 %".217", 0
-  br i1 %".218", label %".11.if.endif.if", label %".11.if.endif.endif"
+  %".242" = load i32, i32* %"i.1"
+  %".243" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".242"
+  %".244" = load i8, i8* %".243"
+  %".245" = load i8, i8* %".243"
+  %".246" = call i32 @"isPart"(i8 %".245")
+  %".247" = icmp ne i32 %".246", 0
+  br i1 %".247", label %".11.if.endif.if", label %".11.if.endif.endif"
 .11.if.if.if:
   %".48" = load i32, i32* %"i.1"
   %".49" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".48"
@@ -260,427 +260,457 @@ cal:
   store i32 %".81", i32* @"operate_top"
   br label %".11.if.if.else.endif"
 .11.if.if.else.else:
-  %".84" = load i32, i32* @"operate_top"
-  %".85" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".84"
-  %".86" = load i8, i8* %".85"
-  %".87" = load i8, i8* %".85"
-  %".88" = icmp eq i8 %".87", 43
-  %".89" = icmp ne i1 %".88", 0
-  br i1 %".89", label %".11.if.if.else.else.if", label %".11.if.if.else.else.endif"
+  br label %".85"
 .11.if.if.else.endif:
   br label %".11.if.if.endif"
-.11.if.if.else.else.if:
-  %".91" = load i32, i32* @"number_top"
-  %".92" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".91"
-  %".93" = load i32, i32* %".92"
-  %".94" = load i32, i32* %".92"
-  %".95" = load i32, i32* @"number_top"
-  %".96" = sub i32 %".95", 1
-  %".97" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".96"
-  %".98" = load i32, i32* %".97"
-  %".99" = load i32, i32* %".97"
-  %".100" = add i32 %".94", %".99"
-  %".101" = load i32, i32* @"number_top"
-  %".102" = sub i32 %".101", 1
-  %".103" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".102"
-  store i32 %".100", i32* %".103"
-  br label %".11.if.if.else.else.endif"
-.11.if.if.else.else.endif:
+.84:
+  %".229" = load i32, i32* @"operate_top"
+  %".230" = add i32 %".229", 1
+  store i32 %".230", i32* @"operate_top"
+  %".232" = load i32, i32* %"i.1"
+  %".233" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".232"
+  %".234" = load i8, i8* %".233"
+  %".235" = load i32, i32* @"operate_top"
+  %".236" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".235"
+  %".237" = load i8, i8* %".233"
+  store i8 %".237", i8* %".236"
+  br label %".11.if.if.else.endif"
+.85:
+  %".89" = load i32, i32* @"operate_top"
+  %".90" = icmp sge i32 %".89", 0
+  %".91" = load i32, i32* %"i.1"
+  %".92" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".91"
+  %".93" = load i8, i8* %".92"
+  %".94" = load i8, i8* %".92"
+  %".95" = load i32, i32* @"operate_top"
+  %".96" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".95"
+  %".97" = load i8, i8* %".96"
+  %".98" = load i8, i8* %".96"
+  %".99" = call i32 @"isPrior"(i8 %".94", i8 %".98")
+  %".100" = icmp eq i32 %".99", 0
+  %".101" = icmp ne i1 %".90", 0
+  %".102" = icmp ne i1 %".100", 0
+  %".103" = and i1 %".101", %".102"
+  %".104" = icmp ne i1 %".103", 0
+  br i1 %".104", label %".86", label %".84"
+.86:
   %".106" = load i32, i32* @"operate_top"
   %".107" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".106"
   %".108" = load i8, i8* %".107"
   %".109" = load i8, i8* %".107"
-  %".110" = icmp eq i8 %".109", 45
+  %".110" = icmp eq i8 %".109", 43
   %".111" = icmp ne i1 %".110", 0
-  br i1 %".111", label %".11.if.if.else.else.endif.if", label %".11.if.if.else.else.endif.endif"
-.11.if.if.else.else.endif.if:
+  br i1 %".111", label %".86.if", label %".86.endif"
+.87:
+  br label %".86.endif.endif.endif.endif.endif"
+.86.if:
   %".113" = load i32, i32* @"number_top"
-  %".114" = sub i32 %".113", 1
-  %".115" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".114"
-  %".116" = load i32, i32* %".115"
-  %".117" = load i32, i32* %".115"
-  %".118" = load i32, i32* @"number_top"
+  %".114" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".113"
+  %".115" = load i32, i32* %".114"
+  %".116" = load i32, i32* %".114"
+  %".117" = load i32, i32* @"number_top"
+  %".118" = sub i32 %".117", 1
   %".119" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".118"
   %".120" = load i32, i32* %".119"
   %".121" = load i32, i32* %".119"
-  %".122" = sub i32 %".117", %".121"
+  %".122" = add i32 %".116", %".121"
   %".123" = load i32, i32* @"number_top"
   %".124" = sub i32 %".123", 1
   %".125" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".124"
   store i32 %".122", i32* %".125"
-  br label %".11.if.if.else.else.endif.endif"
-.11.if.if.else.else.endif.endif:
+  br label %".86.endif"
+.86.endif:
   %".128" = load i32, i32* @"operate_top"
   %".129" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".128"
   %".130" = load i8, i8* %".129"
   %".131" = load i8, i8* %".129"
-  %".132" = icmp eq i8 %".131", 42
+  %".132" = icmp eq i8 %".131", 45
   %".133" = icmp ne i1 %".132", 0
-  br i1 %".133", label %".11.if.if.else.else.endif.endif.if", label %".11.if.if.else.else.endif.endif.endif"
-.11.if.if.else.else.endif.endif.if:
+  br i1 %".133", label %".86.endif.if", label %".86.endif.endif"
+.86.endif.if:
   %".135" = load i32, i32* @"number_top"
-  %".136" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".135"
-  %".137" = load i32, i32* %".136"
-  %".138" = load i32, i32* %".136"
-  %".139" = load i32, i32* @"number_top"
-  %".140" = sub i32 %".139", 1
+  %".136" = sub i32 %".135", 1
+  %".137" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".136"
+  %".138" = load i32, i32* %".137"
+  %".139" = load i32, i32* %".137"
+  %".140" = load i32, i32* @"number_top"
   %".141" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".140"
   %".142" = load i32, i32* %".141"
   %".143" = load i32, i32* %".141"
-  %".144" = mul i32 %".138", %".143"
+  %".144" = sub i32 %".139", %".143"
   %".145" = load i32, i32* @"number_top"
   %".146" = sub i32 %".145", 1
   %".147" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".146"
   store i32 %".144", i32* %".147"
-  br label %".11.if.if.else.else.endif.endif.endif"
-.11.if.if.else.else.endif.endif.endif:
+  br label %".86.endif.endif"
+.86.endif.endif:
   %".150" = load i32, i32* @"operate_top"
   %".151" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".150"
   %".152" = load i8, i8* %".151"
   %".153" = load i8, i8* %".151"
-  %".154" = icmp eq i8 %".153", 47
+  %".154" = icmp eq i8 %".153", 42
   %".155" = icmp ne i1 %".154", 0
-  br i1 %".155", label %".11.if.if.else.else.endif.endif.endif.if", label %".11.if.if.else.else.endif.endif.endif.endif"
-.11.if.if.else.else.endif.endif.endif.if:
+  br i1 %".155", label %".86.endif.endif.if", label %".86.endif.endif.endif"
+.86.endif.endif.if:
   %".157" = load i32, i32* @"number_top"
-  %".158" = sub i32 %".157", 1
-  %".159" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".158"
-  %".160" = load i32, i32* %".159"
-  %".161" = load i32, i32* %".159"
-  %".162" = load i32, i32* @"number_top"
+  %".158" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".157"
+  %".159" = load i32, i32* %".158"
+  %".160" = load i32, i32* %".158"
+  %".161" = load i32, i32* @"number_top"
+  %".162" = sub i32 %".161", 1
   %".163" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".162"
   %".164" = load i32, i32* %".163"
   %".165" = load i32, i32* %".163"
-  %".166" = sdiv i32 %".161", %".165"
+  %".166" = mul i32 %".160", %".165"
   %".167" = load i32, i32* @"number_top"
   %".168" = sub i32 %".167", 1
   %".169" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".168"
   store i32 %".166", i32* %".169"
-  br label %".11.if.if.else.else.endif.endif.endif.endif"
-.11.if.if.else.else.endif.endif.endif.endif:
+  br label %".86.endif.endif.endif"
+.86.endif.endif.endif:
   %".172" = load i32, i32* @"operate_top"
   %".173" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".172"
   %".174" = load i8, i8* %".173"
   %".175" = load i8, i8* %".173"
-  %".176" = icmp eq i8 %".175", 40
+  %".176" = icmp eq i8 %".175", 47
   %".177" = icmp ne i1 %".176", 0
-  br i1 %".177", label %".11.if.if.else.else.endif.endif.endif.endif.if", label %".11.if.if.else.else.endif.endif.endif.endif.endif"
-.11.if.if.else.else.endif.endif.endif.endif.if:
-  %".179" = load i32, i32* %"i.1"
-  %".180" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".179"
-  %".181" = load i8, i8* %".180"
-  %".182" = load i32, i32* @"operate_top"
-  %".183" = add i32 %".182", 1
-  %".184" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".183"
-  %".185" = load i8, i8* %".180"
-  store i8 %".185", i8* %".184"
-  %".187" = load i32, i32* @"operate_top"
-  %".188" = add i32 %".187", 1
-  store i32 %".188", i32* @"operate_top"
-  br label %".10"
-.11.if.if.else.else.endif.endif.endif.endif.endif:
-  %".192" = load i32, i32* @"operate_top"
-  %".193" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".192"
-  %".194" = load i8, i8* %".193"
-  %".195" = load i8, i8* %".193"
-  %".196" = icmp ne i8 %".195", 40
-  %".197" = icmp ne i1 %".196", 0
-  br i1 %".197", label %".11.if.if.else.else.endif.endif.endif.endif.endif.if", label %".11.if.if.else.else.endif.endif.endif.endif.endif.endif"
-.11.if.if.else.else.endif.endif.endif.endif.endif.if:
-  %".199" = load i32, i32* @"number_top"
-  %".200" = sub i32 %".199", 1
-  store i32 %".200", i32* @"number_top"
-  %".202" = load i32, i32* %"i.1"
-  %".203" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".202"
-  %".204" = load i8, i8* %".203"
-  %".205" = load i32, i32* @"operate_top"
+  br i1 %".177", label %".86.endif.endif.endif.if", label %".86.endif.endif.endif.endif"
+.86.endif.endif.endif.if:
+  %".179" = load i32, i32* @"number_top"
+  %".180" = sub i32 %".179", 1
+  %".181" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".180"
+  %".182" = load i32, i32* %".181"
+  %".183" = load i32, i32* %".181"
+  %".184" = load i32, i32* @"number_top"
+  %".185" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".184"
+  %".186" = load i32, i32* %".185"
+  %".187" = load i32, i32* %".185"
+  %".188" = sdiv i32 %".183", %".187"
+  %".189" = load i32, i32* @"number_top"
+  %".190" = sub i32 %".189", 1
+  %".191" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".190"
+  store i32 %".188", i32* %".191"
+  br label %".86.endif.endif.endif.endif"
+.86.endif.endif.endif.endif:
+  %".194" = load i32, i32* @"operate_top"
+  %".195" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".194"
+  %".196" = load i8, i8* %".195"
+  %".197" = load i8, i8* %".195"
+  %".198" = icmp eq i8 %".197", 40
+  %".199" = icmp ne i1 %".198", 0
+  br i1 %".199", label %".86.endif.endif.endif.endif.if", label %".86.endif.endif.endif.endif.endif"
+.86.endif.endif.endif.endif.if:
+  %".201" = load i32, i32* %"i.1"
+  %".202" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".201"
+  %".203" = load i8, i8* %".202"
+  %".204" = load i32, i32* @"operate_top"
+  %".205" = add i32 %".204", 1
   %".206" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".205"
-  %".207" = load i8, i8* %".203"
+  %".207" = load i8, i8* %".202"
   store i8 %".207", i8* %".206"
-  br label %".11.if.if.else.else.endif.endif.endif.endif.endif.endif"
-.11.if.if.else.else.endif.endif.endif.endif.endif.endif:
-  br label %".11.if.if.else.endif"
+  %".209" = load i32, i32* @"operate_top"
+  %".210" = add i32 %".209", 1
+  store i32 %".210", i32* @"operate_top"
+  br label %".85"
+.86.endif.endif.endif.endif.endif:
+  %".214" = load i32, i32* @"operate_top"
+  %".215" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".214"
+  %".216" = load i8, i8* %".215"
+  %".217" = load i8, i8* %".215"
+  %".218" = icmp ne i8 %".217", 40
+  %".219" = icmp ne i1 %".218", 0
+  br i1 %".219", label %".86.endif.endif.endif.endif.endif.if", label %".86.endif.endif.endif.endif.endif.endif"
+.86.endif.endif.endif.endif.endif.if:
+  %".221" = load i32, i32* @"number_top"
+  %".222" = sub i32 %".221", 1
+  store i32 %".222", i32* @"number_top"
+  %".224" = load i32, i32* @"operate_top"
+  %".225" = sub i32 %".224", 1
+  store i32 %".225", i32* @"operate_top"
+  br label %".86.endif.endif.endif.endif.endif.endif"
+.86.endif.endif.endif.endif.endif.endif:
+  br label %".85"
 .11.if.endif.if:
-  %".220" = load i32, i32* %"i.1"
-  %".221" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".220"
-  %".222" = load i8, i8* %".221"
-  %".223" = load i8, i8* %".221"
-  %".224" = icmp eq i8 %".223", 40
-  %".225" = icmp ne i1 %".224", 0
-  br i1 %".225", label %".11.if.endif.if.if", label %".11.if.endif.if.else"
+  %".249" = load i32, i32* %"i.1"
+  %".250" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".249"
+  %".251" = load i8, i8* %".250"
+  %".252" = load i8, i8* %".250"
+  %".253" = icmp eq i8 %".252", 40
+  %".254" = icmp ne i1 %".253", 0
+  br i1 %".254", label %".11.if.endif.if.if", label %".11.if.endif.if.else"
 .11.if.endif.endif:
   br label %".11.endif"
 .11.if.endif.if.if:
-  %".227" = load i32, i32* %"i.1"
-  %".228" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".227"
-  %".229" = load i8, i8* %".228"
-  %".230" = load i32, i32* @"operate_top"
-  %".231" = add i32 %".230", 1
-  %".232" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".231"
-  %".233" = load i8, i8* %".228"
-  store i8 %".233", i8* %".232"
-  %".235" = load i32, i32* @"operate_top"
-  %".236" = add i32 %".235", 1
-  store i32 %".236", i32* @"operate_top"
+  %".256" = load i32, i32* %"i.1"
+  %".257" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"src", i32 0, i32 %".256"
+  %".258" = load i8, i8* %".257"
+  %".259" = load i32, i32* @"operate_top"
+  %".260" = add i32 %".259", 1
+  %".261" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".260"
+  %".262" = load i8, i8* %".257"
+  store i8 %".262", i8* %".261"
+  %".264" = load i32, i32* @"operate_top"
+  %".265" = add i32 %".264", 1
+  store i32 %".265", i32* @"operate_top"
   br label %".11.if.endif.if.endif"
 .11.if.endif.if.else:
-  br label %".240"
+  br label %".269"
 .11.if.endif.if.endif:
   br label %".11.if.endif.endif"
-.239:
-  %".347" = load i32, i32* @"operate_top"
-  %".348" = sub i32 %".347", 1
-  store i32 %".348", i32* @"operate_top"
+.268:
+  %".376" = load i32, i32* @"operate_top"
+  %".377" = sub i32 %".376", 1
+  store i32 %".377", i32* @"operate_top"
   br label %".11.if.endif.if.endif"
-.240:
-  %".244" = load i32, i32* @"operate_top"
-  %".245" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".244"
-  %".246" = load i8, i8* %".245"
-  %".247" = load i8, i8* %".245"
-  %".248" = icmp ne i8 %".247", 40
-  %".249" = icmp ne i1 %".248", 0
-  br i1 %".249", label %".241", label %".239"
-.241:
-  %".251" = load i32, i32* @"operate_top"
-  %".252" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".251"
-  %".253" = load i8, i8* %".252"
-  %".254" = load i8, i8* %".252"
-  %".255" = icmp eq i8 %".254", 43
-  %".256" = icmp ne i1 %".255", 0
-  br i1 %".256", label %".241.if", label %".241.endif"
-.242:
-  br label %".239"
-.241.if:
-  %".258" = load i32, i32* @"number_top"
-  %".259" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".258"
-  %".260" = load i32, i32* %".259"
-  %".261" = load i32, i32* %".259"
-  %".262" = load i32, i32* @"number_top"
-  %".263" = sub i32 %".262", 1
-  %".264" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".263"
-  %".265" = load i32, i32* %".264"
-  %".266" = load i32, i32* %".264"
-  %".267" = add i32 %".261", %".266"
-  %".268" = load i32, i32* @"number_top"
-  %".269" = sub i32 %".268", 1
-  %".270" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".269"
-  store i32 %".267", i32* %".270"
-  br label %".241.endif"
-.241.endif:
+.269:
   %".273" = load i32, i32* @"operate_top"
   %".274" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".273"
   %".275" = load i8, i8* %".274"
   %".276" = load i8, i8* %".274"
-  %".277" = icmp eq i8 %".276", 45
+  %".277" = icmp ne i8 %".276", 40
   %".278" = icmp ne i1 %".277", 0
-  br i1 %".278", label %".241.endif.if", label %".241.endif.endif"
-.241.endif.if:
-  %".280" = load i32, i32* @"number_top"
-  %".281" = sub i32 %".280", 1
-  %".282" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".281"
-  %".283" = load i32, i32* %".282"
-  %".284" = load i32, i32* %".282"
-  %".285" = load i32, i32* @"number_top"
-  %".286" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".285"
-  %".287" = load i32, i32* %".286"
-  %".288" = load i32, i32* %".286"
-  %".289" = sub i32 %".284", %".288"
-  %".290" = load i32, i32* @"number_top"
-  %".291" = sub i32 %".290", 1
-  %".292" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".291"
-  store i32 %".289", i32* %".292"
-  br label %".241.endif.endif"
-.241.endif.endif:
-  %".295" = load i32, i32* @"operate_top"
-  %".296" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".295"
-  %".297" = load i8, i8* %".296"
-  %".298" = load i8, i8* %".296"
-  %".299" = icmp eq i8 %".298", 42
-  %".300" = icmp ne i1 %".299", 0
-  br i1 %".300", label %".241.endif.endif.if", label %".241.endif.endif.endif"
-.241.endif.endif.if:
-  %".302" = load i32, i32* @"number_top"
-  %".303" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".302"
-  %".304" = load i32, i32* %".303"
-  %".305" = load i32, i32* %".303"
-  %".306" = load i32, i32* @"number_top"
-  %".307" = sub i32 %".306", 1
-  %".308" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".307"
-  %".309" = load i32, i32* %".308"
-  %".310" = load i32, i32* %".308"
-  %".311" = mul i32 %".305", %".310"
-  %".312" = load i32, i32* @"number_top"
-  %".313" = sub i32 %".312", 1
-  %".314" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".313"
-  store i32 %".311", i32* %".314"
-  br label %".241.endif.endif.endif"
-.241.endif.endif.endif:
-  %".317" = load i32, i32* @"operate_top"
-  %".318" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".317"
-  %".319" = load i8, i8* %".318"
-  %".320" = load i8, i8* %".318"
-  %".321" = icmp eq i8 %".320", 47
-  %".322" = icmp ne i1 %".321", 0
-  br i1 %".322", label %".241.endif.endif.endif.if", label %".241.endif.endif.endif.endif"
-.241.endif.endif.endif.if:
-  %".324" = load i32, i32* @"number_top"
-  %".325" = sub i32 %".324", 1
-  %".326" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".325"
-  %".327" = load i32, i32* %".326"
-  %".328" = load i32, i32* %".326"
-  %".329" = load i32, i32* @"number_top"
-  %".330" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".329"
-  %".331" = load i32, i32* %".330"
-  %".332" = load i32, i32* %".330"
-  %".333" = sdiv i32 %".328", %".332"
-  %".334" = load i32, i32* @"number_top"
-  %".335" = sub i32 %".334", 1
-  %".336" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".335"
-  store i32 %".333", i32* %".336"
-  br label %".241.endif.endif.endif.endif"
-.241.endif.endif.endif.endif:
-  %".339" = load i32, i32* @"number_top"
-  %".340" = sub i32 %".339", 1
-  store i32 %".340", i32* @"number_top"
-  %".342" = load i32, i32* @"operate_top"
-  %".343" = sub i32 %".342", 1
-  store i32 %".343", i32* @"operate_top"
-  br label %".240"
+  br i1 %".278", label %".270", label %".268"
+.270:
+  %".280" = load i32, i32* @"operate_top"
+  %".281" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".280"
+  %".282" = load i8, i8* %".281"
+  %".283" = load i8, i8* %".281"
+  %".284" = icmp eq i8 %".283", 43
+  %".285" = icmp ne i1 %".284", 0
+  br i1 %".285", label %".270.if", label %".270.endif"
+.271:
+  br label %".268"
+.270.if:
+  %".287" = load i32, i32* @"number_top"
+  %".288" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".287"
+  %".289" = load i32, i32* %".288"
+  %".290" = load i32, i32* %".288"
+  %".291" = load i32, i32* @"number_top"
+  %".292" = sub i32 %".291", 1
+  %".293" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".292"
+  %".294" = load i32, i32* %".293"
+  %".295" = load i32, i32* %".293"
+  %".296" = add i32 %".290", %".295"
+  %".297" = load i32, i32* @"number_top"
+  %".298" = sub i32 %".297", 1
+  %".299" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".298"
+  store i32 %".296", i32* %".299"
+  br label %".270.endif"
+.270.endif:
+  %".302" = load i32, i32* @"operate_top"
+  %".303" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".302"
+  %".304" = load i8, i8* %".303"
+  %".305" = load i8, i8* %".303"
+  %".306" = icmp eq i8 %".305", 45
+  %".307" = icmp ne i1 %".306", 0
+  br i1 %".307", label %".270.endif.if", label %".270.endif.endif"
+.270.endif.if:
+  %".309" = load i32, i32* @"number_top"
+  %".310" = sub i32 %".309", 1
+  %".311" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".310"
+  %".312" = load i32, i32* %".311"
+  %".313" = load i32, i32* %".311"
+  %".314" = load i32, i32* @"number_top"
+  %".315" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".314"
+  %".316" = load i32, i32* %".315"
+  %".317" = load i32, i32* %".315"
+  %".318" = sub i32 %".313", %".317"
+  %".319" = load i32, i32* @"number_top"
+  %".320" = sub i32 %".319", 1
+  %".321" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".320"
+  store i32 %".318", i32* %".321"
+  br label %".270.endif.endif"
+.270.endif.endif:
+  %".324" = load i32, i32* @"operate_top"
+  %".325" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".324"
+  %".326" = load i8, i8* %".325"
+  %".327" = load i8, i8* %".325"
+  %".328" = icmp eq i8 %".327", 42
+  %".329" = icmp ne i1 %".328", 0
+  br i1 %".329", label %".270.endif.endif.if", label %".270.endif.endif.endif"
+.270.endif.endif.if:
+  %".331" = load i32, i32* @"number_top"
+  %".332" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".331"
+  %".333" = load i32, i32* %".332"
+  %".334" = load i32, i32* %".332"
+  %".335" = load i32, i32* @"number_top"
+  %".336" = sub i32 %".335", 1
+  %".337" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".336"
+  %".338" = load i32, i32* %".337"
+  %".339" = load i32, i32* %".337"
+  %".340" = mul i32 %".334", %".339"
+  %".341" = load i32, i32* @"number_top"
+  %".342" = sub i32 %".341", 1
+  %".343" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".342"
+  store i32 %".340", i32* %".343"
+  br label %".270.endif.endif.endif"
+.270.endif.endif.endif:
+  %".346" = load i32, i32* @"operate_top"
+  %".347" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".346"
+  %".348" = load i8, i8* %".347"
+  %".349" = load i8, i8* %".347"
+  %".350" = icmp eq i8 %".349", 47
+  %".351" = icmp ne i1 %".350", 0
+  br i1 %".351", label %".270.endif.endif.endif.if", label %".270.endif.endif.endif.endif"
+.270.endif.endif.endif.if:
+  %".353" = load i32, i32* @"number_top"
+  %".354" = sub i32 %".353", 1
+  %".355" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".354"
+  %".356" = load i32, i32* %".355"
+  %".357" = load i32, i32* %".355"
+  %".358" = load i32, i32* @"number_top"
+  %".359" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".358"
+  %".360" = load i32, i32* %".359"
+  %".361" = load i32, i32* %".359"
+  %".362" = sdiv i32 %".357", %".361"
+  %".363" = load i32, i32* @"number_top"
+  %".364" = sub i32 %".363", 1
+  %".365" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".364"
+  store i32 %".362", i32* %".365"
+  br label %".270.endif.endif.endif.endif"
+.270.endif.endif.endif.endif:
+  %".368" = load i32, i32* @"number_top"
+  %".369" = sub i32 %".368", 1
+  store i32 %".369", i32* @"number_top"
+  %".371" = load i32, i32* @"operate_top"
+  %".372" = sub i32 %".371", 1
+  store i32 %".372", i32* @"operate_top"
+  br label %".269"
 .11.else.if:
-  %".397" = load i32, i32* @"number_top"
-  %".398" = add i32 %".397", 1
-  %".399" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".398"
-  %".400" = load i32, i32* %"num"
-  store i32 %".400", i32* %".399"
-  %".402" = load i32, i32* @"number_top"
-  %".403" = add i32 %".402", 1
-  store i32 %".403", i32* @"number_top"
+  %".426" = load i32, i32* @"number_top"
+  %".427" = add i32 %".426", 1
+  %".428" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".427"
+  %".429" = load i32, i32* %"num"
+  store i32 %".429", i32* %".428"
+  %".431" = load i32, i32* @"number_top"
+  %".432" = add i32 %".431", 1
+  store i32 %".432", i32* @"number_top"
   store i32 0, i32* %"num"
   br label %".11.else.endif"
 .11.else.endif:
   br label %".11.endif"
-.412:
-  %".523" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 0
-  %".524" = load i32, i32* %".523"
-  %".525" = load i32, i32* %".523"
-  ret i32 %".525"
-.413:
-  %".417" = load i32, i32* @"operate_top"
-  %".418" = sub i32 0, 1
-  %".419" = icmp ne i32 %".417", %".418"
-  %".420" = load i32, i32* @"number_top"
-  %".421" = icmp ne i32 %".420", 0
-  %".422" = icmp ne i1 %".419", 0
-  %".423" = icmp ne i1 %".421", 0
-  %".424" = or i1 %".422", %".423"
-  %".425" = icmp ne i1 %".424", 0
-  br i1 %".425", label %".414", label %".412"
-.414:
-  %".427" = load i32, i32* @"operate_top"
-  %".428" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".427"
-  %".429" = load i8, i8* %".428"
-  %".430" = load i8, i8* %".428"
-  %".431" = icmp eq i8 %".430", 43
-  %".432" = icmp ne i1 %".431", 0
-  br i1 %".432", label %".414.if", label %".414.endif"
-.415:
-  br label %".412"
-.414.if:
-  %".434" = load i32, i32* @"number_top"
-  %".435" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".434"
-  %".436" = load i32, i32* %".435"
-  %".437" = load i32, i32* %".435"
-  %".438" = load i32, i32* @"number_top"
-  %".439" = sub i32 %".438", 1
-  %".440" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".439"
-  %".441" = load i32, i32* %".440"
-  %".442" = load i32, i32* %".440"
-  %".443" = add i32 %".437", %".442"
-  %".444" = load i32, i32* @"number_top"
-  %".445" = sub i32 %".444", 1
-  %".446" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".445"
-  store i32 %".443", i32* %".446"
-  br label %".414.endif"
-.414.endif:
-  %".449" = load i32, i32* @"operate_top"
-  %".450" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".449"
-  %".451" = load i8, i8* %".450"
-  %".452" = load i8, i8* %".450"
-  %".453" = icmp eq i8 %".452", 45
-  %".454" = icmp ne i1 %".453", 0
-  br i1 %".454", label %".414.endif.if", label %".414.endif.endif"
-.414.endif.if:
-  %".456" = load i32, i32* @"number_top"
-  %".457" = sub i32 %".456", 1
-  %".458" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".457"
-  %".459" = load i32, i32* %".458"
-  %".460" = load i32, i32* %".458"
-  %".461" = load i32, i32* @"number_top"
-  %".462" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".461"
-  %".463" = load i32, i32* %".462"
-  %".464" = load i32, i32* %".462"
-  %".465" = sub i32 %".460", %".464"
-  %".466" = load i32, i32* @"number_top"
-  %".467" = sub i32 %".466", 1
-  %".468" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".467"
-  store i32 %".465", i32* %".468"
-  br label %".414.endif.endif"
-.414.endif.endif:
-  %".471" = load i32, i32* @"operate_top"
-  %".472" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".471"
-  %".473" = load i8, i8* %".472"
-  %".474" = load i8, i8* %".472"
-  %".475" = icmp eq i8 %".474", 42
-  %".476" = icmp ne i1 %".475", 0
-  br i1 %".476", label %".414.endif.endif.if", label %".414.endif.endif.endif"
-.414.endif.endif.if:
-  %".478" = load i32, i32* @"number_top"
-  %".479" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".478"
-  %".480" = load i32, i32* %".479"
-  %".481" = load i32, i32* %".479"
-  %".482" = load i32, i32* @"number_top"
-  %".483" = sub i32 %".482", 1
-  %".484" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".483"
-  %".485" = load i32, i32* %".484"
-  %".486" = load i32, i32* %".484"
-  %".487" = mul i32 %".481", %".486"
-  %".488" = load i32, i32* @"number_top"
-  %".489" = sub i32 %".488", 1
-  %".490" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".489"
-  store i32 %".487", i32* %".490"
-  br label %".414.endif.endif.endif"
-.414.endif.endif.endif:
-  %".493" = load i32, i32* @"operate_top"
-  %".494" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".493"
-  %".495" = load i8, i8* %".494"
-  %".496" = load i8, i8* %".494"
-  %".497" = icmp eq i8 %".496", 47
-  %".498" = icmp ne i1 %".497", 0
-  br i1 %".498", label %".414.endif.endif.endif.if", label %".414.endif.endif.endif.endif"
-.414.endif.endif.endif.if:
-  %".500" = load i32, i32* @"number_top"
-  %".501" = sub i32 %".500", 1
-  %".502" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".501"
-  %".503" = load i32, i32* %".502"
-  %".504" = load i32, i32* %".502"
-  %".505" = load i32, i32* @"number_top"
-  %".506" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".505"
-  %".507" = load i32, i32* %".506"
-  %".508" = load i32, i32* %".506"
-  %".509" = sdiv i32 %".504", %".508"
-  %".510" = load i32, i32* @"number_top"
-  %".511" = sub i32 %".510", 1
-  %".512" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".511"
-  store i32 %".509", i32* %".512"
-  br label %".414.endif.endif.endif.endif"
-.414.endif.endif.endif.endif:
-  %".515" = load i32, i32* @"number_top"
-  %".516" = sub i32 %".515", 1
-  store i32 %".516", i32* @"number_top"
-  %".518" = load i32, i32* @"operate_top"
+.442:
+  %".553" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 0
+  %".554" = load i32, i32* %".553"
+  %".555" = load i32, i32* %".553"
+  ret i32 %".555"
+.443:
+  %".447" = load i32, i32* @"operate_top"
+  %".448" = sub i32 0, 1
+  %".449" = icmp ne i32 %".447", %".448"
+  %".450" = load i32, i32* @"number_top"
+  %".451" = icmp ne i32 %".450", 0
+  %".452" = icmp ne i1 %".449", 0
+  %".453" = icmp ne i1 %".451", 0
+  %".454" = or i1 %".452", %".453"
+  %".455" = icmp ne i1 %".454", 0
+  br i1 %".455", label %".444", label %".442"
+.444:
+  %".457" = load i32, i32* @"operate_top"
+  %".458" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".457"
+  %".459" = load i8, i8* %".458"
+  %".460" = load i8, i8* %".458"
+  %".461" = icmp eq i8 %".460", 43
+  %".462" = icmp ne i1 %".461", 0
+  br i1 %".462", label %".444.if", label %".444.endif"
+.445:
+  br label %".442"
+.444.if:
+  %".464" = load i32, i32* @"number_top"
+  %".465" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".464"
+  %".466" = load i32, i32* %".465"
+  %".467" = load i32, i32* %".465"
+  %".468" = load i32, i32* @"number_top"
+  %".469" = sub i32 %".468", 1
+  %".470" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".469"
+  %".471" = load i32, i32* %".470"
+  %".472" = load i32, i32* %".470"
+  %".473" = add i32 %".467", %".472"
+  %".474" = load i32, i32* @"number_top"
+  %".475" = sub i32 %".474", 1
+  %".476" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".475"
+  store i32 %".473", i32* %".476"
+  br label %".444.endif"
+.444.endif:
+  %".479" = load i32, i32* @"operate_top"
+  %".480" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".479"
+  %".481" = load i8, i8* %".480"
+  %".482" = load i8, i8* %".480"
+  %".483" = icmp eq i8 %".482", 45
+  %".484" = icmp ne i1 %".483", 0
+  br i1 %".484", label %".444.endif.if", label %".444.endif.endif"
+.444.endif.if:
+  %".486" = load i32, i32* @"number_top"
+  %".487" = sub i32 %".486", 1
+  %".488" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".487"
+  %".489" = load i32, i32* %".488"
+  %".490" = load i32, i32* %".488"
+  %".491" = load i32, i32* @"number_top"
+  %".492" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".491"
+  %".493" = load i32, i32* %".492"
+  %".494" = load i32, i32* %".492"
+  %".495" = sub i32 %".490", %".494"
+  %".496" = load i32, i32* @"number_top"
+  %".497" = sub i32 %".496", 1
+  %".498" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".497"
+  store i32 %".495", i32* %".498"
+  br label %".444.endif.endif"
+.444.endif.endif:
+  %".501" = load i32, i32* @"operate_top"
+  %".502" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".501"
+  %".503" = load i8, i8* %".502"
+  %".504" = load i8, i8* %".502"
+  %".505" = icmp eq i8 %".504", 42
+  %".506" = icmp ne i1 %".505", 0
+  br i1 %".506", label %".444.endif.endif.if", label %".444.endif.endif.endif"
+.444.endif.endif.if:
+  %".508" = load i32, i32* @"number_top"
+  %".509" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".508"
+  %".510" = load i32, i32* %".509"
+  %".511" = load i32, i32* %".509"
+  %".512" = load i32, i32* @"number_top"
+  %".513" = sub i32 %".512", 1
+  %".514" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".513"
+  %".515" = load i32, i32* %".514"
+  %".516" = load i32, i32* %".514"
+  %".517" = mul i32 %".511", %".516"
+  %".518" = load i32, i32* @"number_top"
   %".519" = sub i32 %".518", 1
-  store i32 %".519", i32* @"operate_top"
-  br label %".413"
+  %".520" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".519"
+  store i32 %".517", i32* %".520"
+  br label %".444.endif.endif.endif"
+.444.endif.endif.endif:
+  %".523" = load i32, i32* @"operate_top"
+  %".524" = getelementptr inbounds [1000 x i8], [1000 x i8]* @"operate", i32 0, i32 %".523"
+  %".525" = load i8, i8* %".524"
+  %".526" = load i8, i8* %".524"
+  %".527" = icmp eq i8 %".526", 47
+  %".528" = icmp ne i1 %".527", 0
+  br i1 %".528", label %".444.endif.endif.endif.if", label %".444.endif.endif.endif.endif"
+.444.endif.endif.endif.if:
+  %".530" = load i32, i32* @"number_top"
+  %".531" = sub i32 %".530", 1
+  %".532" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".531"
+  %".533" = load i32, i32* %".532"
+  %".534" = load i32, i32* %".532"
+  %".535" = load i32, i32* @"number_top"
+  %".536" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".535"
+  %".537" = load i32, i32* %".536"
+  %".538" = load i32, i32* %".536"
+  %".539" = sdiv i32 %".534", %".538"
+  %".540" = load i32, i32* @"number_top"
+  %".541" = sub i32 %".540", 1
+  %".542" = getelementptr inbounds [1000 x i32], [1000 x i32]* @"number", i32 0, i32 %".541"
+  store i32 %".539", i32* %".542"
+  br label %".444.endif.endif.endif.endif"
+.444.endif.endif.endif.endif:
+  %".545" = load i32, i32* @"number_top"
+  %".546" = sub i32 %".545", 1
+  store i32 %".546", i32* @"number_top"
+  %".548" = load i32, i32* @"operate_top"
+  %".549" = sub i32 %".548", 1
+  store i32 %".549", i32* @"operate_top"
+  br label %".443"
 }
 
 define i32 @"main"() 
